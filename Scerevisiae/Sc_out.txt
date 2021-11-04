@@ -1,0 +1,80 @@
+Aerobic
+FBA Solution Biomass 0.5034461852504927
+exchange flux metabolites secreted EX_co2_b 34.45914654576099
+exchange flux metabolites secreted EX_etoh_b 32.110910302192295
+exchange flux metabolites secreted EX_for_b 0.002602816777745046
+exchange flux metabolites secreted EX_h2o_b 0.7707952680343139
+exchange flux metabolites secreted EX_h_b 0.6729263090531781
+exchange flux metabolites secreted EX_nadp_b 2.390383897765691e-14
+
+Anaerobic
+FBA Solution Biomass 1.5502615775654767e-14
+exchange flux metabolites secreted EX_co2_b 40.09987195902672
+exchange flux metabolites secreted EX_etoh_b 39.35083226632507
+exchange flux metabolites secreted EX_h_b 0.5992317541613019
+exchange flux metabolites secreted EX_pi_b 2.8781810321339146e-14
+exchange flux metabolites secreted EX_pnto_R_b 3.575870308788643e-31
+exchange flux metabolites secreted EX_so3_b 1.7976952624839408
+exchange flux metabolites secreted EX_succ_b 0.2996158770806503
+
+Aerobic dif bounds on carbon:
+FBA Solution Biomass 0.9347215245699186
+exchange flux metabolites secreted EX_co2_b 68.5703994935209
+exchange flux metabolites secreted EX_etoh_b 65.92384794136825
+exchange flux metabolites secreted EX_for_b 0.004832510282026492
+exchange flux metabolites secreted EX_h2o_b 8.28426506111763
+exchange flux metabolites secreted EX_h_b 1.2493861786011706
+
+Anaerobic dif bounds on carbon:
+FBA Solution Biomass -1.0371648936761129e-14
+exchange flux metabolites secreted EX_co2_b 80.2023047375159
+exchange flux metabolites secreted EX_etoh_b 78.68501920614598
+exchange flux metabolites secreted EX_fecost_b 1.5557473405141692e-17
+exchange flux metabolites secreted EX_g3pc_b 1.7009504256288252e-16
+exchange flux metabolites secreted EX_h_b 1.2138284250961036
+exchange flux metabolites secreted EX_nh4_b 5.494275124671613e-16
+exchange flux metabolites secreted EX_pi_b 7.70641890613914e-14
+exchange flux metabolites secreted EX_ribflv_b 1.0267932447393517e-17
+exchange flux metabolites secreted EX_so3_b 3.6414852752881264
+exchange flux metabolites secreted EX_succ_b 0.6069142125480231
+FBA Solution Biomass 0.5034461852504947
+exchange flux metabolites secreted EX_co2_b 34.45914654576107
+exchange flux metabolites secreted EX_etoh_b 32.110910302192316
+exchange flux metabolites secreted EX_for_b 0.00260281677774505
+exchange flux metabolites secreted EX_h2o_b 0.7707952680343226
+exchange flux metabolites secreted EX_h_b 0.6729263090533593
+
+
+
+
+FBA Solution Biomass 0.5034461852504947
+exchange flux metabolites secreted EX_co2_b 34.45914654576107
+exchange flux metabolites secreted EX_etoh_b 32.110910302192316
+exchange flux metabolites secreted EX_for_b 0.00260281677774505
+exchange flux metabolites secreted EX_h2o_b 0.7707952680343226
+exchange flux metabolites secreted EX_h_b 0.6729263090533593
+FBA Solution Biomass 0.5034461852504947
+exchange flux metabolites secreted EX_co2_b 34.45914654576107
+exchange flux metabolites secreted EX_etoh_b 32.110910302192316
+exchange flux metabolites secreted EX_for_b 0.00260281677774505
+exchange flux metabolites secreted EX_h2o_b 0.7707952680343226
+exchange flux metabolites secreted EX_h_b 0.6729263090533593
+FBA Solution Biomass 0.5034461852504947
+exchange flux metabolites secreted EX_co2_b 34.45914654576107
+exchange flux metabolites secreted EX_etoh_b 32.110910302192316
+exchange flux metabolites secreted EX_for_b 0.00260281677774505
+exchange flux metabolites secreted EX_h2o_b 0.7707952680343226
+exchange flux metabolites secreted EX_h_b 0.6729263090533593
+
+
+
+
+
+
+FBA Solution Biomass 0.5034461852504947
+exchange flux metabolites secreted EX_co2_b 34.45914654576107
+exchange flux metabolites secreted EX_etoh_b 32.110910302192316
+exchange flux metabolites secreted EX_for_b 0.00260281677774505
+exchange flux metabolites secreted EX_h2o_b 0.7707952680343226
+exchange flux metabolites secreted EX_h_b 0.6729263090533593
+

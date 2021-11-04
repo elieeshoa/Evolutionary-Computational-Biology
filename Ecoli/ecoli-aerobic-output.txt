@@ -1,0 +1,12 @@
+EX_5mtr(e) : 0.0
+EX_co2(e) : 20.997729626040837
+EX_h(e) : 8.730231408432582
+EX_h2o(e) : 46.09106109199553
+
+Time elapsed to solve the FBA problem: 0.15424013137817383
+Objective value: 0.9501535669139151
+
+exchange flux metabolites secreted CO2 exchange 20.997729626040837
+exchange flux metabolites secreted H+ exchange 8.730231408432582
+exchange flux metabolites secreted H2O exchange 46.09106109199553
+exchange flux metabolites secreted methanol exchange 1.90030713382783e-06

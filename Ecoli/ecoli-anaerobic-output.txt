@@ -1,0 +1,20 @@
+EX_5mtr(e) : 0.0
+EX_ac(e) : 8.34772570914614
+EX_co2(e) : 17.394220012989344
+EX_glyclt(e) : 0.00015003571829602658
+EX_h(e) : 10.559954830469914
+EX_h2(e) : 17.501054639430237
+EX_succ(e) : 0.07484786352100478
+
+Time elapsed to solve the FBA problem: 0.21797394752502441
+Objective value: 0.22426863721378903
+
+exchange flux metabolites secreted Acetate exchange 8.34772570914614
+exchange flux metabolites secreted CO2 exchange 17.394220012989344
+exchange flux metabolites secreted Ethanol exchange 8.2021356680456
+exchange flux metabolites secreted Formate exchange 6.522560269672794e-16
+exchange flux metabolites secreted Glycolate exchange 0.00015003571829602658
+exchange flux metabolites secreted H+ exchange 10.559954830469914
+exchange flux metabolites secreted H2 exchange 17.501054639430237
+exchange flux metabolites secreted methanol exchange 4.485372744275781e-07
+exchange flux metabolites secreted Succinate exchange 0.07484786352100478

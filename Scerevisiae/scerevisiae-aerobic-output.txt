@@ -1,0 +1,18 @@
+----- iAZ900 S. cerevisiae under aerobic glucose minimal condition  -----
+
+EX_co2_e_ : -5.551115123125783e-17
+EX_etoh_e_ : 0.06329113924050672
+EX_for_e_ : 0.0
+EX_h2o_e_ : 0.0
+EX_h_e_ : 0.5822784810126599
+
+Objective value: 0.0
+
+exchange flux metabolites secreted EX_aces_b 1.010586378110707e-17
+exchange flux metabolites secreted EX_ala_L_b 0.12658227848101236
+exchange flux metabolites secreted EX_etoh_b 0.06329113924050672
+exchange flux metabolites secreted EX_h_b 0.5822784810126599
+exchange flux metabolites secreted EX_hxan_b 0.20253164556962033
+exchange flux metabolites secreted EX_nh4_b 0.07594936708860815
+exchange flux metabolites secreted EX_pi_b 0.6075949367088613
+exchange flux metabolites secreted EX_succ_b 0.1265822784810128

@@ -1,0 +1,124 @@
+Objective
+=========
+1.0 Ec_biomass_iJO1366_core_53p95M = 0.950153566913915
+
+Uptake
+------
+Metabolite      Reaction      Flux                  Range  C-Number  C-Flux
+     ca2_e     EX_ca2(e)  0.004946   [0.004698; 0.004946]         0   0.00%
+      cl_e      EX_cl(e)  0.004946   [0.004698; 0.004946]         0   0.00%
+ cobalt2_e EX_cobalt2(e) 2.375E-05 [2.257E-05; 2.375E-05]         0   0.00%
+     cu2_e     EX_cu2(e) 0.0006737   [0.00064; 0.0006737]         0   0.00%
+     fe2_e     EX_fe2(e)   0.01526        [-4.867; 10.18]         0   0.00%
+   glc_D_e     EX_glc(e)        10            [9.517; 10]         6 100.00%
+       k_e       EX_k(e)    0.1855       [0.1762; 0.1855]         0   0.00%
+     mg2_e     EX_mg2(e)  0.008243    [0.00783; 0.008243]         0   0.00%
+     mn2_e     EX_mn2(e) 0.0006566 [0.0006237; 0.0006566]         0   0.00%
+    mobd_e    EX_mobd(e) 0.0001226  [0.0001164; 0.000123]         0   0.00%
+     nh4_e     EX_nh4(e)     10.26         [9.749; 12.89]         0   0.00%
+     ni2_e     EX_ni2(e) 0.0003069 [0.0002916; 0.0003069]         0   0.00%
+      o2_e      EX_o2(e)     18.97            [17.46; 20]         0   0.00%
+      pi_e      EX_pi(e)    0.9165        [0.8707; 1.443]         0   0.00%
+     so4_e     EX_so4(e)    0.2396        [0.2277; 1.305]         0   0.00%
+     zn2_e     EX_zn2(e)  0.000324  [0.0003078; 0.000324]         0   0.00%
+
+Secretion
+---------
+        Metabolite               Reaction       Flux                    Range  C-Number C-Flux
+          4crsol_c              DM_4CRSOL -0.0002119 [-0.0002119; -0.0002013]         7  0.01%
+           5drib_c               DM_5DRIB -0.0002138    [-0.1098; -0.0002031]         5  0.01%
+            amob_c                DM_AMOB   -1.9E-06   [-1.9E-06; -1.805E-06]        15  0.00%
+          mththf_c              DM_MTHTHF -0.0004257    [-0.5039; -0.0004044]         5  0.01%
+            oxam_c                DM_OXAM          0             [-0.7033; 0]         2  0.00%
+         12ppd_R_e          EX_12ppd_R(e)          0             [-0.7019; 0]         3  0.00%
+            3hpp_e             EX_3hpp(e)          0             [-0.6176; 0]         3  0.00%
+           4abut_e            EX_4abut(e)          0             [-0.6524; 0]         4  0.00%
+          5dglcn_e           EX_5dglcn(e)          0             [-0.5515; 0]         6  0.00%
+            5mtr_e             EX_5mtr(e)          0             [-0.1377; 0]         6  0.00%
+    LalaDgluMdap_e     EX_LalaDgluMdap(e)          0             [-0.1625; 0]        15  0.00%
+LalaDgluMdapDala_e EX_LalaDgluMdapDala(e)          0             [-0.1395; 0]        18  0.00%
+              ac_e               EX_ac(e)          0              [-1.782; 0]         2  0.00%
+           acald_e            EX_acald(e)          0              [-1.252; 0]         2  0.00%
+         acolipa_e          EX_acolipa(e)          0            [-0.01294; 0]       181  0.00%
+           acser_e            EX_acser(e)          0             [-0.6345; 0]         5  0.00%
+             ade_e              EX_ade(e)          0             [-0.5418; 0]         5  0.00%
+             adn_e              EX_adn(e)          0             [-0.2733; 0]        10  0.00%
+             agm_e              EX_agm(e)          0             [-0.4329; 0]         5  0.00%
+             akg_e              EX_akg(e)          0             [-0.7238; 0]         5  0.00%
+           ala_D_e            EX_ala_D(e)          0             [-0.7165; 0]         3  0.00%
+           ala_L_e            EX_ala_L(e)          0              [-1.029; 0]         3  0.00%
+          alaala_e           EX_alaala(e)          0             [-0.3563; 0]         6  0.00%
+           alltn_e            EX_alltn(e)          0             [-0.6297; 0]         4  0.00%
+           anhgm_e            EX_anhgm(e)          0             [-0.1362; 0]        19  0.00%
+           arg_L_e            EX_arg_L(e)          0             [-0.4289; 0]         6  0.00%
+           asn_L_e            EX_asn_L(e)          0             [-0.8578; 0]         4  0.00%
+           asp_L_e            EX_asp_L(e)          0             [-0.9264; 0]         4  0.00%
+            cbl1_e             EX_cbl1(e)          0           [0; 1.065E-05]        62  0.00%
+            cgly_e             EX_cgly(e)          0             [-0.3425; 0]         5  0.00%
+             cit_e              EX_cit(e)          0             [-0.6176; 0]         6  0.00%
+             co2_e              EX_co2(e)        -21         [-22.95; -19.19]         1 99.98%
+          colipa_e           EX_colipa(e)          0            [-0.01327; 0]       176  0.00%
+         colipap_e          EX_colipap(e)          0           [-0.009726; 0]       176  0.00%
+           cys_L_e            EX_cys_L(e)          0             [-0.5147; 0]         3  0.00%
+            cytd_e             EX_cytd(e)          0             [-0.3151; 0]         9  0.00%
+             dha_e              EX_dha(e)          0              [-0.965; 0]         3  0.00%
+      eca4colipa_e       EX_eca4colipa(e)          0           [-0.009106; 0]       272  0.00%
+          enlipa_e           EX_enlipa(e)          0            [-0.01917; 0]       112  0.00%
+           enter_e            EX_enter(e)          0            [-0.09092; 0]        30  0.00%
+            etoh_e             EX_etoh(e)          0              [-1.053; 0]         2  0.00%
+             fe3_e              EX_fe3(e)          0          [-10.17; 4.882]         0  0.00%
+         feenter_e          EX_feenter(e)          0            [-0.09092; 0]        30  0.00%
+            g3pe_e             EX_g3pe(e)          0             [-0.3676; 0]         5  0.00%
+            g3pg_e             EX_g3pg(e)          0             [-0.3217; 0]         6  0.00%
+            glcn_e             EX_glcn(e)          0             [-0.5035; 0]         6  0.00%
+           gln_L_e            EX_gln_L(e)          0             [-0.6095; 0]         5  0.00%
+           glu_L_e            EX_glu_L(e)          0             [-0.6434; 0]         5  0.00%
+             gly_e              EX_gly(e)          0              [-1.385; 0]         2  0.00%
+          glyald_e           EX_glyald(e)          0              [-0.874; 0]         3  0.00%
+            glyc_e             EX_glyc(e)          0              [-0.772; 0]         3  0.00%
+          glyc3p_e           EX_glyc3p(e)          0             [-0.5719; 0]         3  0.00%
+          glyc_R_e           EX_glyc_R(e)          0             [-0.3325; 0]         3  0.00%
+          glyclt_e           EX_glyclt(e)          0             [-0.6617; 0]         2  0.00%
+           gthrd_e            EX_gthrd(e)          0             [-0.2251; 0]        10  0.00%
+             gua_e              EX_gua(e)          0             [-0.5615; 0]         5  0.00%
+               h_e                EX_h(e)      -8.73         [-13.18; 0.2539]         0  0.00%
+              h2_e               EX_h2(e)          0              [-4.776; 0]         0  0.00%
+             h2o_e              EX_h2o(e)     -46.09         [-50.16; -42.01]         0  0.00%
+             h2s_e              EX_h2s(e)          0              [-1.077; 0]         0  0.00%
+           his_L_e            EX_his_L(e)          0             [-0.4349; 0]         6  0.00%
+           hom_L_e            EX_hom_L(e)          0             [-0.6524; 0]         4  0.00%
+            hxan_e             EX_hxan(e)          0             [-0.5754; 0]         5  0.00%
+          idon_L_e           EX_idon_L(e)          0              [-0.509; 0]         6  0.00%
+           ile_L_e            EX_ile_L(e)          0             [-0.3676; 0]         6  0.00%
+          indole_e           EX_indole(e)          0             [-0.2807; 0]         8  0.00%
+             ins_e              EX_ins(e)          0             [-0.2833; 0]        10  0.00%
+      kdo2lipid4_e       EX_kdo2lipid4(e)          0            [-0.02626; 0]        84  0.00%
+           lac_D_e            EX_lac_D(e)          0              [-1.053; 0]         3  0.00%
+           lac_L_e            EX_lac_L(e)          0             [-0.8741; 0]         3  0.00%
+           leu_L_e            EX_leu_L(e)          0             [-0.4099; 0]         6  0.00%
+            lipa_e             EX_lipa(e)          0             [-0.0196; 0]       110  0.00%
+       lipa_cold_e        EX_lipa_cold(e)          0            [-0.01888; 0]       114  0.00%
+           lys_L_e            EX_lys_L(e)          0              [-0.386; 0]         6  0.00%
+           mal_L_e            EX_mal_L(e)          0             [-0.9083; 0]         4  0.00%
+            meoh_e             EX_meoh(e)   -1.9E-06 [-1.901E-06; -1.805E-06]         1  0.00%
+           met_L_e            EX_met_L(e)          0             [-0.3098; 0]         5  0.00%
+             orn_e              EX_orn(e)          0             [-0.4775; 0]         5  0.00%
+           phe_L_e            EX_phe_L(e)          0             [-0.2725; 0]         9  0.00%
+           pheme_e            EX_pheme(e)          0            [-0.06976; 0]        34  0.00%
+           pro_L_e            EX_pro_L(e)          0              [-0.509; 0]         5  0.00%
+            ptrc_e             EX_ptrc(e)          0             [-0.4825; 0]         4  0.00%
+             pyr_e              EX_pyr(e)          0              [-1.252; 0]         3  0.00%
+            quin_e             EX_quin(e)          0             [-0.3993; 0]         7  0.00%
+           ser_L_e            EX_ser_L(e)          0                [-1.1; 0]         3  0.00%
+            spmd_e             EX_spmd(e)          0             [-0.1377; 0]         7  0.00%
+            succ_e             EX_succ(e)          0              [-0.874; 0]         4  0.00%
+           thr_L_e            EX_thr_L(e)          0             [-0.6345; 0]         4  0.00%
+           thymd_e            EX_thymd(e)          0             [-0.2639; 0]        10  0.00%
+           trp_L_e            EX_trp_L(e)          0             [-0.2227; 0]        11  0.00%
+           tyr_L_e            EX_tyr_L(e)          0             [-0.2842; 0]         9  0.00%
+             ura_e              EX_ura(e)          0             [-0.8578; 0]         4  0.00%
+            urea_e             EX_urea(e)          0              [-1.437; 0]         1  0.00%
+             uri_e              EX_uri(e)          0             [-0.3357; 0]         9  0.00%
+           val_L_e            EX_val_L(e)          0             [-0.5147; 0]         5  0.00%
+             xan_e              EX_xan(e)          0             [-0.6302; 0]         5  0.00%
+            xtsn_e             EX_xtsn(e)          0              [-0.296; 0]        10  0.00%

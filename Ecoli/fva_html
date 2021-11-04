@@ -1,0 +1,931 @@
+<h3>Objective</h3><p>1.0 Ec_biomass_iJO1366_core_53p95M = 0.950153566913915</p><h4>Uptake</h4><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Metabolite</th>
+      <th>Reaction</th>
+      <th>Flux</th>
+      <th>Range</th>
+      <th>C-Number</th>
+      <th>C-Flux</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ca2_e</td>
+      <td>EX_ca2(e)</td>
+      <td>0.004946</td>
+      <td>[0.004698;  0.004946]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>cl_e</td>
+      <td>EX_cl(e)</td>
+      <td>0.004946</td>
+      <td>[0.004698;  0.004946]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>cobalt2_e</td>
+      <td>EX_cobalt2(e)</td>
+      <td>2.375E-05</td>
+      <td>[2.257E-05;  2.375E-05]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>cu2_e</td>
+      <td>EX_cu2(e)</td>
+      <td>0.0006737</td>
+      <td>[0.00064;  0.0006737]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>fe2_e</td>
+      <td>EX_fe2(e)</td>
+      <td>0.01526</td>
+      <td>[-4.867;  10.18]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>glc_D_e</td>
+      <td>EX_glc(e)</td>
+      <td>10</td>
+      <td>[9.517;  10]</td>
+      <td>6</td>
+      <td>100.00%</td>
+    </tr>
+    <tr>
+      <td>k_e</td>
+      <td>EX_k(e)</td>
+      <td>0.1855</td>
+      <td>[0.1762;  0.1855]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>mg2_e</td>
+      <td>EX_mg2(e)</td>
+      <td>0.008243</td>
+      <td>[0.00783;  0.008243]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>mn2_e</td>
+      <td>EX_mn2(e)</td>
+      <td>0.0006566</td>
+      <td>[0.0006237;  0.0006566]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>mobd_e</td>
+      <td>EX_mobd(e)</td>
+      <td>0.0001226</td>
+      <td>[0.0001164;  0.000123]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>nh4_e</td>
+      <td>EX_nh4(e)</td>
+      <td>10.26</td>
+      <td>[9.749;  12.89]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>ni2_e</td>
+      <td>EX_ni2(e)</td>
+      <td>0.0003069</td>
+      <td>[0.0002916;  0.0003069]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>o2_e</td>
+      <td>EX_o2(e)</td>
+      <td>18.97</td>
+      <td>[17.46;  20]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>pi_e</td>
+      <td>EX_pi(e)</td>
+      <td>0.9165</td>
+      <td>[0.8707;  1.443]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>so4_e</td>
+      <td>EX_so4(e)</td>
+      <td>0.2396</td>
+      <td>[0.2277;  1.305]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>zn2_e</td>
+      <td>EX_zn2(e)</td>
+      <td>0.000324</td>
+      <td>[0.0003078;  0.000324]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+  </tbody>
+</table><h4>Secretion</h4><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Metabolite</th>
+      <th>Reaction</th>
+      <th>Flux</th>
+      <th>Range</th>
+      <th>C-Number</th>
+      <th>C-Flux</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>4crsol_c</td>
+      <td>DM_4CRSOL</td>
+      <td>-0.0002119</td>
+      <td>[-0.0002119;  -0.0002013]</td>
+      <td>7</td>
+      <td>0.01%</td>
+    </tr>
+    <tr>
+      <td>5drib_c</td>
+      <td>DM_5DRIB</td>
+      <td>-0.0002138</td>
+      <td>[-0.1098;  -0.0002031]</td>
+      <td>5</td>
+      <td>0.01%</td>
+    </tr>
+    <tr>
+      <td>amob_c</td>
+      <td>DM_AMOB</td>
+      <td>-1.9E-06</td>
+      <td>[-1.9E-06;  -1.805E-06]</td>
+      <td>15</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>mththf_c</td>
+      <td>DM_MTHTHF</td>
+      <td>-0.0004257</td>
+      <td>[-0.5039;  -0.0004044]</td>
+      <td>5</td>
+      <td>0.01%</td>
+    </tr>
+    <tr>
+      <td>oxam_c</td>
+      <td>DM_OXAM</td>
+      <td>0</td>
+      <td>[-0.7033;  0]</td>
+      <td>2</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>12ppd_R_e</td>
+      <td>EX_12ppd_R(e)</td>
+      <td>0</td>
+      <td>[-0.7019;  0]</td>
+      <td>3</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>3hpp_e</td>
+      <td>EX_3hpp(e)</td>
+      <td>0</td>
+      <td>[-0.6176;  0]</td>
+      <td>3</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>4abut_e</td>
+      <td>EX_4abut(e)</td>
+      <td>0</td>
+      <td>[-0.6524;  0]</td>
+      <td>4</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>5dglcn_e</td>
+      <td>EX_5dglcn(e)</td>
+      <td>0</td>
+      <td>[-0.5515;  0]</td>
+      <td>6</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>5mtr_e</td>
+      <td>EX_5mtr(e)</td>
+      <td>0</td>
+      <td>[-0.1377;  0]</td>
+      <td>6</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>LalaDgluMdap_e</td>
+      <td>EX_LalaDgluMdap(e)</td>
+      <td>0</td>
+      <td>[-0.1625;  0]</td>
+      <td>15</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>LalaDgluMdapDala_e</td>
+      <td>EX_LalaDgluMdapDala(e)</td>
+      <td>0</td>
+      <td>[-0.1395;  0]</td>
+      <td>18</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>ac_e</td>
+      <td>EX_ac(e)</td>
+      <td>0</td>
+      <td>[-1.782;  0]</td>
+      <td>2</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>acald_e</td>
+      <td>EX_acald(e)</td>
+      <td>0</td>
+      <td>[-1.252;  0]</td>
+      <td>2</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>acolipa_e</td>
+      <td>EX_acolipa(e)</td>
+      <td>0</td>
+      <td>[-0.01294;  0]</td>
+      <td>181</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>acser_e</td>
+      <td>EX_acser(e)</td>
+      <td>0</td>
+      <td>[-0.6345;  0]</td>
+      <td>5</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>ade_e</td>
+      <td>EX_ade(e)</td>
+      <td>0</td>
+      <td>[-0.5418;  0]</td>
+      <td>5</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>adn_e</td>
+      <td>EX_adn(e)</td>
+      <td>0</td>
+      <td>[-0.2733;  0]</td>
+      <td>10</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>agm_e</td>
+      <td>EX_agm(e)</td>
+      <td>0</td>
+      <td>[-0.4329;  0]</td>
+      <td>5</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>akg_e</td>
+      <td>EX_akg(e)</td>
+      <td>0</td>
+      <td>[-0.7238;  0]</td>
+      <td>5</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>ala_D_e</td>
+      <td>EX_ala_D(e)</td>
+      <td>0</td>
+      <td>[-0.7165;  0]</td>
+      <td>3</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>ala_L_e</td>
+      <td>EX_ala_L(e)</td>
+      <td>0</td>
+      <td>[-1.029;  0]</td>
+      <td>3</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>alaala_e</td>
+      <td>EX_alaala(e)</td>
+      <td>0</td>
+      <td>[-0.3563;  0]</td>
+      <td>6</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>alltn_e</td>
+      <td>EX_alltn(e)</td>
+      <td>0</td>
+      <td>[-0.6297;  0]</td>
+      <td>4</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>anhgm_e</td>
+      <td>EX_anhgm(e)</td>
+      <td>0</td>
+      <td>[-0.1362;  0]</td>
+      <td>19</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>arg_L_e</td>
+      <td>EX_arg_L(e)</td>
+      <td>0</td>
+      <td>[-0.4289;  0]</td>
+      <td>6</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>asn_L_e</td>
+      <td>EX_asn_L(e)</td>
+      <td>0</td>
+      <td>[-0.8578;  0]</td>
+      <td>4</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>asp_L_e</td>
+      <td>EX_asp_L(e)</td>
+      <td>0</td>
+      <td>[-0.9264;  0]</td>
+      <td>4</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>cbl1_e</td>
+      <td>EX_cbl1(e)</td>
+      <td>0</td>
+      <td>[0;  1.065E-05]</td>
+      <td>62</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>cgly_e</td>
+      <td>EX_cgly(e)</td>
+      <td>0</td>
+      <td>[-0.3425;  0]</td>
+      <td>5</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>cit_e</td>
+      <td>EX_cit(e)</td>
+      <td>0</td>
+      <td>[-0.6176;  0]</td>
+      <td>6</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>co2_e</td>
+      <td>EX_co2(e)</td>
+      <td>-21</td>
+      <td>[-22.95;  -19.19]</td>
+      <td>1</td>
+      <td>99.98%</td>
+    </tr>
+    <tr>
+      <td>colipa_e</td>
+      <td>EX_colipa(e)</td>
+      <td>0</td>
+      <td>[-0.01327;  0]</td>
+      <td>176</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>colipap_e</td>
+      <td>EX_colipap(e)</td>
+      <td>0</td>
+      <td>[-0.009726;  0]</td>
+      <td>176</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>cys_L_e</td>
+      <td>EX_cys_L(e)</td>
+      <td>0</td>
+      <td>[-0.5147;  0]</td>
+      <td>3</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>cytd_e</td>
+      <td>EX_cytd(e)</td>
+      <td>0</td>
+      <td>[-0.3151;  0]</td>
+      <td>9</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>dha_e</td>
+      <td>EX_dha(e)</td>
+      <td>0</td>
+      <td>[-0.965;  0]</td>
+      <td>3</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>eca4colipa_e</td>
+      <td>EX_eca4colipa(e)</td>
+      <td>0</td>
+      <td>[-0.009106;  0]</td>
+      <td>272</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>enlipa_e</td>
+      <td>EX_enlipa(e)</td>
+      <td>0</td>
+      <td>[-0.01917;  0]</td>
+      <td>112</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>enter_e</td>
+      <td>EX_enter(e)</td>
+      <td>0</td>
+      <td>[-0.09092;  0]</td>
+      <td>30</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>etoh_e</td>
+      <td>EX_etoh(e)</td>
+      <td>0</td>
+      <td>[-1.053;  0]</td>
+      <td>2</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>fe3_e</td>
+      <td>EX_fe3(e)</td>
+      <td>0</td>
+      <td>[-10.17;  4.882]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>feenter_e</td>
+      <td>EX_feenter(e)</td>
+      <td>0</td>
+      <td>[-0.09092;  0]</td>
+      <td>30</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>g3pe_e</td>
+      <td>EX_g3pe(e)</td>
+      <td>0</td>
+      <td>[-0.3676;  0]</td>
+      <td>5</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>g3pg_e</td>
+      <td>EX_g3pg(e)</td>
+      <td>0</td>
+      <td>[-0.3217;  0]</td>
+      <td>6</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>glcn_e</td>
+      <td>EX_glcn(e)</td>
+      <td>0</td>
+      <td>[-0.5035;  0]</td>
+      <td>6</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>gln_L_e</td>
+      <td>EX_gln_L(e)</td>
+      <td>0</td>
+      <td>[-0.6095;  0]</td>
+      <td>5</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>glu_L_e</td>
+      <td>EX_glu_L(e)</td>
+      <td>0</td>
+      <td>[-0.6434;  0]</td>
+      <td>5</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>gly_e</td>
+      <td>EX_gly(e)</td>
+      <td>0</td>
+      <td>[-1.385;  0]</td>
+      <td>2</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>glyald_e</td>
+      <td>EX_glyald(e)</td>
+      <td>0</td>
+      <td>[-0.874;  0]</td>
+      <td>3</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>glyc_e</td>
+      <td>EX_glyc(e)</td>
+      <td>0</td>
+      <td>[-0.772;  0]</td>
+      <td>3</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>glyc3p_e</td>
+      <td>EX_glyc3p(e)</td>
+      <td>0</td>
+      <td>[-0.5719;  0]</td>
+      <td>3</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>glyc_R_e</td>
+      <td>EX_glyc_R(e)</td>
+      <td>0</td>
+      <td>[-0.3325;  0]</td>
+      <td>3</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>glyclt_e</td>
+      <td>EX_glyclt(e)</td>
+      <td>0</td>
+      <td>[-0.6617;  0]</td>
+      <td>2</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>gthrd_e</td>
+      <td>EX_gthrd(e)</td>
+      <td>0</td>
+      <td>[-0.2251;  0]</td>
+      <td>10</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>gua_e</td>
+      <td>EX_gua(e)</td>
+      <td>0</td>
+      <td>[-0.5615;  0]</td>
+      <td>5</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>h_e</td>
+      <td>EX_h(e)</td>
+      <td>-8.73</td>
+      <td>[-13.18;  0.2539]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>h2_e</td>
+      <td>EX_h2(e)</td>
+      <td>0</td>
+      <td>[-4.776;  0]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>h2o_e</td>
+      <td>EX_h2o(e)</td>
+      <td>-46.09</td>
+      <td>[-50.16;  -42.01]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>h2s_e</td>
+      <td>EX_h2s(e)</td>
+      <td>0</td>
+      <td>[-1.077;  0]</td>
+      <td>0</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>his_L_e</td>
+      <td>EX_his_L(e)</td>
+      <td>0</td>
+      <td>[-0.4349;  0]</td>
+      <td>6</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>hom_L_e</td>
+      <td>EX_hom_L(e)</td>
+      <td>0</td>
+      <td>[-0.6524;  0]</td>
+      <td>4</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>hxan_e</td>
+      <td>EX_hxan(e)</td>
+      <td>0</td>
+      <td>[-0.5754;  0]</td>
+      <td>5</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>idon_L_e</td>
+      <td>EX_idon_L(e)</td>
+      <td>0</td>
+      <td>[-0.509;  0]</td>
+      <td>6</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>ile_L_e</td>
+      <td>EX_ile_L(e)</td>
+      <td>0</td>
+      <td>[-0.3676;  0]</td>
+      <td>6</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>indole_e</td>
+      <td>EX_indole(e)</td>
+      <td>0</td>
+      <td>[-0.2807;  0]</td>
+      <td>8</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>ins_e</td>
+      <td>EX_ins(e)</td>
+      <td>0</td>
+      <td>[-0.2833;  0]</td>
+      <td>10</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>kdo2lipid4_e</td>
+      <td>EX_kdo2lipid4(e)</td>
+      <td>0</td>
+      <td>[-0.02626;  0]</td>
+      <td>84</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>lac_D_e</td>
+      <td>EX_lac_D(e)</td>
+      <td>0</td>
+      <td>[-1.053;  0]</td>
+      <td>3</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>lac_L_e</td>
+      <td>EX_lac_L(e)</td>
+      <td>0</td>
+      <td>[-0.8741;  0]</td>
+      <td>3</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>leu_L_e</td>
+      <td>EX_leu_L(e)</td>
+      <td>0</td>
+      <td>[-0.4099;  0]</td>
+      <td>6</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>lipa_e</td>
+      <td>EX_lipa(e)</td>
+      <td>0</td>
+      <td>[-0.0196;  0]</td>
+      <td>110</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>lipa_cold_e</td>
+      <td>EX_lipa_cold(e)</td>
+      <td>0</td>
+      <td>[-0.01888;  0]</td>
+      <td>114</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>lys_L_e</td>
+      <td>EX_lys_L(e)</td>
+      <td>0</td>
+      <td>[-0.386;  0]</td>
+      <td>6</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>mal_L_e</td>
+      <td>EX_mal_L(e)</td>
+      <td>0</td>
+      <td>[-0.9083;  0]</td>
+      <td>4</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>meoh_e</td>
+      <td>EX_meoh(e)</td>
+      <td>-1.9E-06</td>
+      <td>[-1.901E-06;  -1.805E-06]</td>
+      <td>1</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>met_L_e</td>
+      <td>EX_met_L(e)</td>
+      <td>0</td>
+      <td>[-0.3098;  0]</td>
+      <td>5</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>orn_e</td>
+      <td>EX_orn(e)</td>
+      <td>0</td>
+      <td>[-0.4775;  0]</td>
+      <td>5</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>phe_L_e</td>
+      <td>EX_phe_L(e)</td>
+      <td>0</td>
+      <td>[-0.2725;  0]</td>
+      <td>9</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>pheme_e</td>
+      <td>EX_pheme(e)</td>
+      <td>0</td>
+      <td>[-0.06976;  0]</td>
+      <td>34</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>pro_L_e</td>
+      <td>EX_pro_L(e)</td>
+      <td>0</td>
+      <td>[-0.509;  0]</td>
+      <td>5</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>ptrc_e</td>
+      <td>EX_ptrc(e)</td>
+      <td>0</td>
+      <td>[-0.4825;  0]</td>
+      <td>4</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>pyr_e</td>
+      <td>EX_pyr(e)</td>
+      <td>0</td>
+      <td>[-1.252;  0]</td>
+      <td>3</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>quin_e</td>
+      <td>EX_quin(e)</td>
+      <td>0</td>
+      <td>[-0.3993;  0]</td>
+      <td>7</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>ser_L_e</td>
+      <td>EX_ser_L(e)</td>
+      <td>0</td>
+      <td>[-1.1;  0]</td>
+      <td>3</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>spmd_e</td>
+      <td>EX_spmd(e)</td>
+      <td>0</td>
+      <td>[-0.1377;  0]</td>
+      <td>7</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>succ_e</td>
+      <td>EX_succ(e)</td>
+      <td>0</td>
+      <td>[-0.874;  0]</td>
+      <td>4</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>thr_L_e</td>
+      <td>EX_thr_L(e)</td>
+      <td>0</td>
+      <td>[-0.6345;  0]</td>
+      <td>4</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>thymd_e</td>
+      <td>EX_thymd(e)</td>
+      <td>0</td>
+      <td>[-0.2639;  0]</td>
+      <td>10</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>trp_L_e</td>
+      <td>EX_trp_L(e)</td>
+      <td>0</td>
+      <td>[-0.2227;  0]</td>
+      <td>11</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>tyr_L_e</td>
+      <td>EX_tyr_L(e)</td>
+      <td>0</td>
+      <td>[-0.2842;  0]</td>
+      <td>9</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>ura_e</td>
+      <td>EX_ura(e)</td>
+      <td>0</td>
+      <td>[-0.8578;  0]</td>
+      <td>4</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>urea_e</td>
+      <td>EX_urea(e)</td>
+      <td>0</td>
+      <td>[-1.437;  0]</td>
+      <td>1</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>uri_e</td>
+      <td>EX_uri(e)</td>
+      <td>0</td>
+      <td>[-0.3357;  0]</td>
+      <td>9</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>val_L_e</td>
+      <td>EX_val_L(e)</td>
+      <td>0</td>
+      <td>[-0.5147;  0]</td>
+      <td>5</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>xan_e</td>
+      <td>EX_xan(e)</td>
+      <td>0</td>
+      <td>[-0.6302;  0]</td>
+      <td>5</td>
+      <td>0.00%</td>
+    </tr>
+    <tr>
+      <td>xtsn_e</td>
+      <td>EX_xtsn(e)</td>
+      <td>0</td>
+      <td>[-0.296;  0]</td>
+      <td>10</td>
+      <td>0.00%</td>
+    </tr>
+  </tbody>
+</table>
