@@ -27,7 +27,8 @@ Please contact Ali Zomorrodi at ali.r.zomorrodi@gmail.com for questions and upda
 
 from __future__ import division
 import re, sys, math, copy, time, random
-from datetime import timedelta  # To convert elapsed time to hh:mm:ss format
+from datetime import timedelta
+from numpy import nonzero  # To convert elapsed time to hh:mm:ss format
 from pyomo.environ import *
 from pyomo.opt import *
 from sympy.sets.sets import FiniteSet
@@ -138,7 +139,7 @@ class NashEqFinder(object):
         k1 = list(i)
         while done == 0:
             gameState.append(tuple(k1[0:2]))
-            print('tuple(k1[0:2])', tuple(k1[0:2]))
+            # print('tuple(k1[0:2])', tuple(k1[0:2]))
             del k1[0:2]
             if len(k1) == 0:
                 done = 1
@@ -215,17 +216,17 @@ class NashEqFinder(object):
         def NashCond_rule(optModel,p,*i):
 
             # Convert the game state to the format of keys of the payoff matrix
-            print("original original i ", i)
+            # print("original original i ", i)
             i = self.convert_to_payoffMatrix_key(i)
-            print("original i ", i)
+            # print("original i ", i)
 
             # All possible responses of P to the action all other players
             # have taken in i
-            print('self.game.payoff_matrix.keys()', self.game.payoff_matrix.keys())
-            print(dict(i))
-            print([dict((('row', 'D'), ('column', 'C')))[pp] == dict(i)[pp] for  pp in dict(i).keys() if pp != p])
+            # print('self.game.payoff_matrix.keys()', self.game.payoff_matrix.keys())
+            # print(dict(i))
+            # print([dict((('row', 'D'), ('column', 'C')))[pp] == dict(i)[pp] for  pp in dict(i).keys() if pp != p])
             responseP = [k for k in self.game.payoff_matrix.keys() if False not in [dict(k)[pp] == dict(i)[pp] for  pp in dict(i).keys() if pp != p]] 
-            print('responseP', responseP)
+            # print('responseP', responseP)
             # Find the payoff of the best response of player P 
             bestResP = max([self.game.payoff_matrix[k][p] for k in responseP])
 
@@ -234,9 +235,9 @@ class NashEqFinder(object):
         def add_optlang_NashCond_rule(optlangOptModel,p,i):
 
             # Convert the game state to the format of keys of the payoff matrix
-            print("optlang i ", i)
+            # print("optlang i ", i)
             i = self.convert_to_payoffMatrix_key(i)
-            print("otlang new i ", i)
+            # print("otlang new i ", i)
             # print([1,2,3])
             # print(type(*[1,2,3]))
 
@@ -246,14 +247,14 @@ class NashEqFinder(object):
             # print([dict(k)[pp] == dict(i)[pp] for  pp in dict(i).keys() if pp != p])
             
             responseP = [k for k in self.game.payoff_matrix.keys() if False not in [dict(k)[pp] == dict(i)[pp] for  pp in dict(i).keys() if pp != p]]
-            print('optlang responseP', responseP)
+            # print('optlang responseP', responseP)
 
             # Find the payoff of the best response of player P 
             bestResP = max([self.game.payoff_matrix[k][p] for k in responseP])
-            print('optlang bestResP', bestResP)
-            print('optlang self.game.payoff_matrix[i][p],', self.game.payoff_matrix[i][p])
+            # print('optlang bestResP', bestResP)
+            # print('optlang self.game.payoff_matrix[i][p],', self.game.payoff_matrix[i][p])
 
-            print(self.game.payoff_matrix[i][p] - bestResP*optlangOptModel.variables[str(i).replace(" ", "").replace('(', "").replace(')', "").replace("'","").replace(',', '_')] - self.payoffLB*(1 - optlangOptModel.variables[str(i).replace(" ", "").replace('(', "").replace(')', "").replace("'","").replace(',', '_')]))
+            # print(self.game.payoff_matrix[i][p] - bestResP*optlangOptModel.variables[str(i).replace(" ", "").replace('(', "").replace(')', "").replace("'","").replace(',', '_')] - self.payoffLB*(1 - optlangOptModel.variables[str(i).replace(" ", "").replace('(', "").replace(')', "").replace("'","").replace(',', '_')]))
             model.add(optlang.Constraint(self.game.payoff_matrix[i][p] - bestResP*optlangOptModel.variables[str(i).replace(" ", "").replace('(', "").replace(')', "").replace("'","").replace(',','_')] - self.payoffLB*(1 - optlangOptModel.variables[str(i).replace(" ", "").replace('(', "").replace(')', "").replace("'","").replace(',','_')]), lb=0))
             # return self.game.payoff_matrix[i][p] - bestResP*optlangOptModel.variables[str(i).replace(" ", "").replace('(', "").replace(')', "").replace("'","").replace(',','_')] - self.payoffLB*(1 - optlangOptModel.variables[str(i).replace(" ", "").replace('(', "").replace(')', "").replace("'","").replace(',','_')])
         
@@ -347,19 +348,19 @@ class NashEqFinder(object):
         def add_optlang_NashCond_rule(optlangOptModel,p,i):
 
             # Convert the game state to the format of keys of the payoff matrix
-            print("optlang i ", i)
+            # print("optlang i ", i)
             i = self.convert_to_payoffMatrix_key(i)
-            print("otlang new i ", i) 
+            # print("otlang new i ", i) 
             
             responseP = [k for k in self.game.payoff_matrix.keys() if False not in [dict(k)[pp] == dict(i)[pp] for  pp in dict(i).keys() if pp != p]]
-            print('optlang responseP', responseP)
+            # print('optlang responseP', responseP)
 
             # Find the payoff of the best response of player P 
             bestResP = max([self.game.payoff_matrix[k][p] for k in responseP])
-            print('optlang bestResP', bestResP)
-            print('optlang self.game.payoff_matrix[i][p],', self.game.payoff_matrix[i][p])
+            # print('optlang bestResP', bestResP)
+            # print('optlang self.game.payoff_matrix[i][p],', self.game.payoff_matrix[i][p])
 
-            print(self.game.payoff_matrix[i][p] - bestResP*optlangOptModel.variables[str(i).replace(" ", "").replace('(', "").replace(')', "").replace("'","").replace(',', '_')] - self.payoffLB*(1 - optlangOptModel.variables[str(i).replace(" ", "").replace('(', "").replace(')', "").replace("'","").replace(',', '_')]))
+            # print(self.game.payoff_matrix[i][p] - bestResP*optlangOptModel.variables[str(i).replace(" ", "").replace('(', "").replace(')', "").replace("'","").replace(',', '_')] - self.payoffLB*(1 - optlangOptModel.variables[str(i).replace(" ", "").replace('(', "").replace(')', "").replace("'","").replace(',', '_')]))
             model.add(optlang.Constraint(self.game.payoff_matrix[i][p] - bestResP*optlangOptModel.variables[str(i).replace(" ", "").replace('(', "").replace(')', "").replace("'","").replace(',','_')] - self.payoffLB*(1 - optlangOptModel.variables[str(i).replace(" ", "").replace('(', "").replace(')', "").replace("'","").replace(',','_')]), lb=0))
       
         model = optlang.Model(name='Original Model')
@@ -385,8 +386,8 @@ class NashEqFinder(object):
         # Add the constraints
         for player in model.players:
             for index in model.indices:
-                print('player ', player)
-                print('index ', index)
+                # print('player ', player)
+                # print('index ', index)
                 print(type(index))
                 add_optlang_NashCond_rule(model, player, index)
 
@@ -682,6 +683,68 @@ class NashEqFinder(object):
         return [self.Nash_equilibria,self.exit_flag]
 
     # Elie
+    def validate(self, nasheq_cells):
+        # Validation: needs removal of hard coded methods
+        print("\n Validation \n")
+        def string_to_index(string):
+            lst = string.split('_')
+            player = lst[-2]
+            sign = lst[-1]
+            return (((lst[0],lst[1]), (lst[2],lst[3]))), player, sign
+
+        original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
+
+        for var_name, var in self.optModel.variables.items():
+            print(var_name, "=", var.primal)
+            matrix_key, player, sign = string_to_index(var_name)
+            if sign == 'plus':
+                self.game.payoff_matrix[matrix_key][player] += var.primal
+            if sign == 'minus':
+                self.game.payoff_matrix[matrix_key][player] -= var.primal
+        #     perturbation = \
+        #             (self.optModel.variables[current_index + '_' + player + '_' + 'plus'][1].primal()
+        #             -self.optModel.variables[current_index + '_' + player + '_' + 'minus'][1].primal())
+            
+        #     print(var_name, "=", var.primal)
+
+        # for key in self.game.payoff_matrix.keys():
+        #     current_index = strip_down(key)
+        #     for player in model.players:
+        #         print(self.optModel.variables[current_index + '_' + player + '_' + 'plus'])
+        #         perturbation = \
+        #             (self.optModel.variables[current_index + '_' + player + '_' + 'plus'][1].primal()
+        #             -self.optModel.variables[current_index + '_' + player + '_' + 'minus'][1].primal())
+        #         self.game.payoff_matrix[key][player] += perturbation
+
+        print('New payoff matrix', self.game.payoff_matrix)
+
+        # self.game.payoff_matrix = original_payoff_matrix
+
+        # print('Original payoff matrix', self.game.payoff_matrix)
+        
+        # # Define an instance of the game
+        # new_game = game(game_name, players_names, players_strategies, payoff_matrix)
+        
+        # Define an instance of the NashEqFinder
+        NashEqFinderInst = NashEqFinder(self.game, stdout_msgs = True)
+        [Nash_equilibria,exit_flag] = NashEqFinderInst.run()
+        [Nash_equilibria,exit_flag] = NashEqFinderInst.optlangRun()
+
+        print("DONE")
+        
+        print ('exit_flag = ',exit_flag)
+        print ('Nash_equilibria = ',Nash_equilibria )
+        for desired_state in nasheq_cells:
+            if list(desired_state) in Nash_equilibria:
+                print('DESIRED STATE', desired_state, "ACHIEVED with these perturbations")
+                for var_name, var in self.optModel.variables.items():
+                    print(var_name, "=", var.primal)
+            else:
+                print('DESIRED STATE', desired_state, "FAILED")
+                for var_name, var in self.optModel.variables.items():
+                    print(var_name, "=", var.primal)
+
+    # Elie
     def newEquilibria(self, nasheq_cells, strategies):
         """
         :param nasheq_cells: a list of elements (('row','C'),('column','C'))
@@ -715,9 +778,9 @@ class NashEqFinder(object):
         
 
 
-        print(self.game.players_names)
-        print(model.players)
-        print(model.indices)
+        # print(self.game.players_names)
+        # print(model.players)
+        # print(model.indices)
 
         variables_names = []
 
@@ -741,8 +804,8 @@ class NashEqFinder(object):
             
             strategies
             root_index = strip_down(cell)
-            print('original cell', cell)
-            print('root_index', root_index)
+            # print('original cell', cell)
+            # print('root_index', root_index)
             
             # add_optlang_NashCond_rule(model, player, index)
             # matrix_key = cell[0] + cell[1]
@@ -752,11 +815,11 @@ class NashEqFinder(object):
             for strategy in [x for x in strategies if x != cell[0][1]]:
                 current_cell = ((cell[0][0], strategy), (cell[1]))
                 current_index = strip_down(current_cell)
-                print('current_index ', current_index)
-                print('current_cell', current_cell)
+                # print('current_index ', current_index)
+                # print('current_cell', current_cell)
                 player = model.players[0]
-                print('root strategy payoff', self.game.payoff_matrix[cell][player])
-                print('current strategy payoff', self.game.payoff_matrix[current_cell][player]) 
+                # print('root strategy payoff', self.game.payoff_matrix[cell][player])
+                # print('current strategy payoff', self.game.payoff_matrix[current_cell][player]) 
                 c = optlang.Constraint(
                         self.game.payoff_matrix[cell][player] \
                         + model.variables[root_index+'_'+player+'_plus'] \
@@ -766,18 +829,18 @@ class NashEqFinder(object):
                         + model.variables[current_index+'_'+player+'_plus'] \
                         - model.variables[current_index+'_'+player+'_minus']
                         ), lb=0)
-                print('c', c)
+                # print('c', c)
                 constraints.append(c)
             print("ADDED rows loop")
 
             for strategy in [x for x in strategies if x != cell[1][1]]:
                 current_cell = ((cell[0]), (cell[1][0], strategy))
                 current_index = strip_down(current_cell)
-                print('current_index ', current_index)
-                print('current_cell', current_cell)
+                # print('current_index ', current_index)
+                # print('current_cell', current_cell)
                 player = model.players[1]
-                print('root strategy payoff', self.game.payoff_matrix[cell][player])
-                print('current strategy payoff', self.game.payoff_matrix[current_cell][player])
+                # print('root strategy payoff', self.game.payoff_matrix[cell][player])
+                # print('current strategy payoff', self.game.payoff_matrix[current_cell][player])
                 c = optlang.Constraint(
                         self.game.payoff_matrix[cell][player] \
                         + model.variables[root_index+'_'+player+'_plus'] \
@@ -787,7 +850,7 @@ class NashEqFinder(object):
                         + model.variables[current_index+'_'+player+'_plus'] \
                         - model.variables[current_index+'_'+player+'_minus']
                         ), lb=0)
-                print('c', c)
+                # print('c', c)
                 constraints.append(c)
             print("ADDED columns loop")
         
@@ -804,12 +867,131 @@ class NashEqFinder(object):
         print("----------")
         for var_name, var in self.optModel.variables.items():
             print(var_name, "=", var.primal)
+
+        original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
+
+        self.validate(nasheq_cells)
+        # # Validation: needs removal of hard coded methods
+        # print("\n Validation \n")
+        # def string_to_index(string):
+        #     lst = string.split('_')
+        #     player = lst[-2]
+        #     sign = lst[-1]
+        #     return (((lst[0],lst[1]), (lst[2],lst[3]))), player, sign
+
+        # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
+
+        # for var_name, var in self.optModel.variables.items():
+        #     print(var_name, "=", var.primal)
+        #     matrix_key, player, sign = string_to_index(var_name)
+        #     if sign == 'plus':
+        #         self.game.payoff_matrix[matrix_key][player] += var.primal
+        #     if sign == 'minus':
+        #         self.game.payoff_matrix[matrix_key][player] -= var.primal
+        # #     perturbation = \
+        # #             (self.optModel.variables[current_index + '_' + player + '_' + 'plus'][1].primal()
+        # #             -self.optModel.variables[current_index + '_' + player + '_' + 'minus'][1].primal())
+            
+        # #     print(var_name, "=", var.primal)
+
+        # # for key in self.game.payoff_matrix.keys():
+        # #     current_index = strip_down(key)
+        # #     for player in model.players:
+        # #         print(self.optModel.variables[current_index + '_' + player + '_' + 'plus'])
+        # #         perturbation = \
+        # #             (self.optModel.variables[current_index + '_' + player + '_' + 'plus'][1].primal()
+        # #             -self.optModel.variables[current_index + '_' + player + '_' + 'minus'][1].primal())
+        # #         self.game.payoff_matrix[key][player] += perturbation
+
+        # print('New payoff matrix', self.game.payoff_matrix)
+
+        self.game.payoff_matrix = original_payoff_matrix
+
+        print('Original payoff matrix', self.game.payoff_matrix)
+        
+        # # Define an instance of the game
+        # new_game = game(game_name, players_names, players_strategies, payoff_matrix)
+        
+        # # Define an instance of the NashEqFinder
+        # NashEqFinderInst = NashEqFinder(new_game, stdout_msgs = True)
+        # [Nash_equilibria,exit_flag] = NashEqFinderInst.run()
+        # [Nash_equilibria,exit_flag] = NashEqFinderInst.optlangRun()
+
+        # print("DONE")
+        
+        # print ('exit_flag = ',exit_flag)
+        # print ('Nash_equilibria = ',Nash_equilibria )
+
+        # print("\n Fixing all nonzero alphas \n")
+        # # Fix all α's that were non-zero in the current solution at zero, so 
+        # # those payoffs are not part of the future solutions at all.
+        # nonzero_vars = []
+        # for var_name, var in self.optModel.variables.items():
+        #     if var.primal > 0:
+        #         nonzero_vars.append(var_name)
+        #         # Setting the variable to zero
+        #         c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
+        #         constraints.append(c)
+        #         model.add(c) 
+
+        # print(constraints)
+        
+        # self.optModel = model        
+        # self.optModel.optimize()
+
+        # print('FINAL optlang model', model)
+
+        # # Print the results on the screen 
+        # print("status:", self.optModel.status)
+        # print("objective value:", self.optModel.objective.value)
+        # print("----------")
+        # for var_name, var in self.optModel.variables.items():
+        #     print(var_name, "=", var.primal)
+
+        # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
+        # self.validate(nasheq_cells)
+        # self.game.payoff_matrix = original_payoff_matrix
+        # print('Original payoff matrix', self.game.payoff_matrix)
+
+
+        # print("\n Preventing alphas from being their optimal value \n")
+        # # For each non-zero α whose optimal value is α^opt, add the following
+        # # constraints:
+        # #                       α≤α^opt-ϵ  &  α≥ α^opt+ϵ
+        # # Where, ϵ is a parameter provided by the user. We should try both 
+        # # small (e.g., 0.01) and large (e.g., 0.5) values. For example, if 
+        # # α^opt=1, examine the following values for ϵ=[0.1,0.2,…,0.9]
+
+        # for var_name, var in self.optModel.variables.items():
+        #     # Setting the variable to zero
+        #     c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
+        #     model.add(c) 
+        
+        # self.optModel = model        
+        # self.optModel.optimize()
+
+        # print('FINAL optlang model', model)
+
+        # # Print the results on the screen 
+        # print("status:", self.optModel.status)
+        # print("objective value:", self.optModel.objective.value)
+        # print("----------")
+        # for var_name, var in self.optModel.variables.items():
+        #     print(var_name, "=", var.primal)
+
+        # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
+        # self.validate(nasheq_cells)
+        # self.game.payoff_matrix = original_payoff_matrix
+        # print('Original payoff matrix', self.game.payoff_matrix)
+
+    
         
 
 #--------- Sample implementation ------
 if __name__ == "__main__":
 
     from game import *
+    print ("\n\n\n\n\n\n\n\n\n\n")
     
     #---------------------------------- 
     print ("\n-- Prisoner's Dilemma ---")
@@ -838,25 +1020,25 @@ if __name__ == "__main__":
     # [Nash_equilibria,exit_flag] = NashEqFinderInst.optlangRun()
     NashEqFinderInst.newEquilibria(nasheq_cells=[(('row','C'),('column','D'))], strategies=['C', 'D'])
 
-    # Validation:
-    payoff_matrix = {}
-    payoff_matrix[(('row','C'),('column','C'))] = {'row':-1,'column':-1}
-    payoff_matrix[(('row','C'),('column','D'))] = {'row':-4 + 1,'column':0} #validation
-    payoff_matrix[(('row','D'),('column','C'))] = {'row':0,'column':-4}
-    payoff_matrix[(('row','D'),('column','D'))] = {'row':-3,'column':-3}
+    # # Validation:
+    # payoff_matrix = {}
+    # payoff_matrix[(('row','C'),('column','C'))] = {'row':-1,'column':-1}
+    # payoff_matrix[(('row','C'),('column','D'))] = {'row':-4 + 1,'column':0} #validation
+    # payoff_matrix[(('row','D'),('column','C'))] = {'row':0,'column':-4}
+    # payoff_matrix[(('row','D'),('column','D'))] = {'row':-3,'column':-3}
     
-    # Define an instance of the game
-    PD = game(game_name, players_names, players_strategies, payoff_matrix)
+    # # Define an instance of the game
+    # PD = game(game_name, players_names, players_strategies, payoff_matrix)
     
-    # Define an instance of the NashEqFinder
-    NashEqFinderInst = NashEqFinder(PD, stdout_msgs = True)
-    [Nash_equilibria,exit_flag] = NashEqFinderInst.run()
-    [Nash_equilibria,exit_flag] = NashEqFinderInst.optlangRun()
+    # # Define an instance of the NashEqFinder
+    # NashEqFinderInst = NashEqFinder(PD, stdout_msgs = True)
+    # [Nash_equilibria,exit_flag] = NashEqFinderInst.run()
+    # [Nash_equilibria,exit_flag] = NashEqFinderInst.optlangRun()
 
-    print("DONE")
+    # print("DONE")
     
-    print ('exit_flag = ',exit_flag)
-    print ('Nash_equilibria = ',Nash_equilibria )
+    # print ('exit_flag = ',exit_flag)
+    # print ('Nash_equilibria = ',Nash_equilibria )
     
     # #---------------------------------- 
     # print ("\n-- Game of pure coordination ---")
