@@ -922,36 +922,36 @@ class NashEqFinder(object):
         # print ('exit_flag = ',exit_flag)
         # print ('Nash_equilibria = ',Nash_equilibria )
 
-        # print("\n Fixing all nonzero alphas \n")
-        # # Fix all α's that were non-zero in the current solution at zero, so 
-        # # those payoffs are not part of the future solutions at all.
-        # nonzero_vars = []
-        # for var_name, var in self.optModel.variables.items():
-        #     if var.primal > 0:
-        #         nonzero_vars.append(var_name)
-        #         # Setting the variable to zero
-        #         c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
-        #         constraints.append(c)
-        #         model.add(c) 
+        print("\n Fixing all nonzero alphas \n")
+        # Fix all α's that were non-zero in the current solution at zero, so 
+        # those payoffs are not part of the future solutions at all.
+        nonzero_vars = []
+        for var_name, var in self.optModel.variables.items():
+            if var.primal > 0:
+                nonzero_vars.append(var_name)
+                # Setting the variable to zero
+                c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
+                constraints.append(c)
+                model.add(c) 
 
-        # print(constraints)
+        print(constraints)
         
-        # self.optModel = model        
-        # self.optModel.optimize()
+        self.optModel = model        
+        self.optModel.optimize()
 
-        # print('FINAL optlang model', model)
+        print('FINAL optlang model', model)
 
-        # # Print the results on the screen 
-        # print("status:", self.optModel.status)
-        # print("objective value:", self.optModel.objective.value)
-        # print("----------")
-        # for var_name, var in self.optModel.variables.items():
-        #     print(var_name, "=", var.primal)
+        # Print the results on the screen 
+        print("status:", self.optModel.status)
+        print("objective value:", self.optModel.objective.value)
+        print("----------")
+        for var_name, var in self.optModel.variables.items():
+            print(var_name, "=", var.primal)
 
-        # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-        # self.validate(nasheq_cells)
-        # self.game.payoff_matrix = original_payoff_matrix
-        # print('Original payoff matrix', self.game.payoff_matrix)
+        original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
+        self.validate(nasheq_cells)
+        self.game.payoff_matrix = original_payoff_matrix
+        print('Original payoff matrix', self.game.payoff_matrix)
 
 
         # print("\n Preventing alphas from being their optimal value \n")
