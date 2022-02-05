@@ -925,16 +925,57 @@ class NashEqFinder(object):
         print("\n Fixing all nonzero alphas \n")
         # Fix all α's that were non-zero in the current solution at zero, so 
         # those payoffs are not part of the future solutions at all.
+        fixing_all_nonzero_constraints = []
         nonzero_vars = []
         for var_name, var in self.optModel.variables.items():
             if var.primal > 0:
                 nonzero_vars.append(var_name)
                 # Setting the variable to zero
                 c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
-                constraints.append(c)
+                fixing_all_nonzero_constraints.append(c)
                 model.add(c) 
 
-        print(constraints)
+        print('fixing_all_nonzero_constraints', fixing_all_nonzero_constraints)
+        
+        self.optModel = model        
+        self.optModel.optimize()
+
+        print('FINAL optlang model', model)
+
+        # Print the results on the screen 
+        print("status:", self.optModel.status)
+        print("objective value:", self.optModel.objective.value)
+        print("----------")
+        for var_name, var in self.optModel.variables.items():
+            print(var_name, "=", var.primal)
+
+        original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
+        self.validate(nasheq_cells)
+        self.game.payoff_matrix = original_payoff_matrix
+        
+        # Extremely important step
+        model.remove(fixing_all_nonzero_constraints)
+        print('Original payoff matrix', self.game.payoff_matrix)
+
+
+        print("\n Preventing alphas from being their optimal value \n")
+        # For each non-zero α whose optimal value is α^opt, add the following
+        # constraints:
+        #                       α≤α^opt-ϵ  &  α≥ α^opt+ϵ
+        # Where, ϵ is a parameter provided by the user. We should try both 
+        # small (e.g., 0.01) and large (e.g., 0.5) values. For example, if 
+        # α^opt=1, examine the following values for ϵ=[0.1,0.2,…,0.9]
+
+        preventing_opt_constraints = []
+
+        for epsilon in [0.01, 0.5]:
+            for var_name, var in self.optModel.variables.items():
+                # Adding the constraint
+                opt = var.primal
+                c1 = optlang.Constraint(opt - model.variables[var_name] - epsilon, lb=0)
+                c2 = optlang.Constraint(opt - model.variables[var_name] + epsilon, lb=0)
+                preventing_opt_constraints.append(c)
+                model.add(c) 
         
         self.optModel = model        
         self.optModel.optimize()
@@ -952,37 +993,6 @@ class NashEqFinder(object):
         self.validate(nasheq_cells)
         self.game.payoff_matrix = original_payoff_matrix
         print('Original payoff matrix', self.game.payoff_matrix)
-
-
-        # print("\n Preventing alphas from being their optimal value \n")
-        # # For each non-zero α whose optimal value is α^opt, add the following
-        # # constraints:
-        # #                       α≤α^opt-ϵ  &  α≥ α^opt+ϵ
-        # # Where, ϵ is a parameter provided by the user. We should try both 
-        # # small (e.g., 0.01) and large (e.g., 0.5) values. For example, if 
-        # # α^opt=1, examine the following values for ϵ=[0.1,0.2,…,0.9]
-
-        # for var_name, var in self.optModel.variables.items():
-        #     # Setting the variable to zero
-        #     c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
-        #     model.add(c) 
-        
-        # self.optModel = model        
-        # self.optModel.optimize()
-
-        # print('FINAL optlang model', model)
-
-        # # Print the results on the screen 
-        # print("status:", self.optModel.status)
-        # print("objective value:", self.optModel.objective.value)
-        # print("----------")
-        # for var_name, var in self.optModel.variables.items():
-        #     print(var_name, "=", var.primal)
-
-        # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-        # self.validate(nasheq_cells)
-        # self.game.payoff_matrix = original_payoff_matrix
-        # print('Original payoff matrix', self.game.payoff_matrix)
 
     
         
