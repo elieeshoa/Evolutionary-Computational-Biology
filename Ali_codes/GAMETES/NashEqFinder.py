@@ -958,6 +958,7 @@ class NashEqFinder(object):
         print('Original payoff matrix', self.game.payoff_matrix)
 
 
+        # This is commented out for now
         # print("\n Preventing alphas from being their optimal value \n")
         # # For each non-zero α whose optimal value is α^opt, add the following
         # # constraints:
