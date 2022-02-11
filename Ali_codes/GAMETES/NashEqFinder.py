@@ -792,7 +792,7 @@ class NashEqFinder(object):
             variables_names.append(str_index)
 
         # Add the objective function
-        model.objective = optlang.Objective(expression=sympy.Add(*sympy.symbols(variables_names)), direction='min')
+        model.objective = optlang.Objective(expression=sympy.Add(*(sympy.symbols(variables_names))), direction='min')
    
         def strip_down(index):
             return str(index).replace(" ", "").replace('(', "").replace(')', "").replace("'","").replace(',', '_')
@@ -958,41 +958,62 @@ class NashEqFinder(object):
         print('Original payoff matrix', self.game.payoff_matrix)
 
 
-        print("\n Preventing alphas from being their optimal value \n")
-        # For each non-zero α whose optimal value is α^opt, add the following
-        # constraints:
-        #                       α≤α^opt-ϵ  &  α≥ α^opt+ϵ
-        # Where, ϵ is a parameter provided by the user. We should try both 
-        # small (e.g., 0.01) and large (e.g., 0.5) values. For example, if 
-        # α^opt=1, examine the following values for ϵ=[0.1,0.2,…,0.9]
+        # print("\n Preventing alphas from being their optimal value \n")
+        # # For each non-zero α whose optimal value is α^opt, add the following
+        # # constraints:
+        # #                       α≤α^opt-ϵ  &  α≥ α^opt+ϵ
+        # # Where, ϵ is a parameter provided by the user. We should try both 
+        # # small (e.g., 0.01) and large (e.g., 0.5) values. For example, if 
+        # # α^opt=1, examine the following values for ϵ=[0.1,0.2,…,0.9]
 
-        preventing_opt_constraints = []
+        # preventing_opt_constraints = []
+        # preventing_variables_names = copy.deepcopy(variables_names)
+        # # for epsilon in [0.01, 0.5]:
+        # epsilon = 0.01
+        # for var_name, var in self.optModel.variables.items():
+        #     # Adding the constraint
+        #     a_opt = var.primal
+        #     a = model.variables[var_name]
+        #     # Add the variable of the absolute difference
+        #     str_index = var_name + "_diff"
+        #     a_diff = optlang.Variable(str_index, lb=0, type='continuous', problem=model)
+        #     model.add(a_diff)
+        #     preventing_variables_names.append(str_index)
 
-        for epsilon in [0.01, 0.5]:
-            for var_name, var in self.optModel.variables.items():
-                # Adding the constraint
-                opt = var.primal
-                c1 = optlang.Constraint(opt - model.variables[var_name] - epsilon, lb=0)
-                c2 = optlang.Constraint(opt - model.variables[var_name] + epsilon, lb=0)
-                preventing_opt_constraints.append(c)
-                model.add(c) 
+        #     # Add the constraints
+        #     c1 = optlang.Constraint(a_diff - a + a_opt, lb=0)
+        #     c2 = optlang.Constraint(a_diff + a - a_opt, lb=0)
+        #     c3 = optlang.Constraint(a_diff - epsilon, lb=0)
+        #     preventing_opt_constraints.append(c1)
+        #     preventing_opt_constraints.append(c2)
+        #     preventing_opt_constraints.append(c3)
+        #     model.add(c1)
+        #     model.add(c2)
+        #     model.add(c3)
+            
+        # model.objective = optlang.Objective(expression=sympy.Add(*sympy.symbols(preventing_variables_names)), direction='min')
         
-        self.optModel = model        
-        self.optModel.optimize()
+        # print('preventing_opt_constraints', preventing_opt_constraints)
+        
+        # self.optModel = model        
+        # self.optModel.optimize()
 
-        print('FINAL optlang model', model)
+        # print('FINAL optlang model', model)
 
-        # Print the results on the screen 
-        print("status:", self.optModel.status)
-        print("objective value:", self.optModel.objective.value)
-        print("----------")
-        for var_name, var in self.optModel.variables.items():
-            print(var_name, "=", var.primal)
+        # # Print the results on the screen 
+        # print("status:", self.optModel.status)
+        # print("objective value:", self.optModel.objective.value)
+        # print("----------")
+        # for var_name, var in self.optModel.variables.items():
+        #     print(var_name, "=", var.primal)
 
-        original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-        self.validate(nasheq_cells)
-        self.game.payoff_matrix = original_payoff_matrix
-        print('Original payoff matrix', self.game.payoff_matrix)
+        # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
+        # self.validate(nasheq_cells)
+        # self.game.payoff_matrix = original_payoff_matrix
+        
+        # # Extremely important step
+        # model.remove(preventing_opt_constraints)
+        # print('Original payoff matrix', self.game.payoff_matrix)
 
     
         
