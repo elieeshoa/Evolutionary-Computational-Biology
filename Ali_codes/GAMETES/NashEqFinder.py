@@ -736,6 +736,41 @@ class NashEqFinder(object):
         print('Original payoff matrix', self.game.payoff_matrix)
         
 
+        # print("\n Fixing all nonzero alphas \n")
+        # # Fix all α's that were non-zero in the current solution at zero, so 
+        # # those payoffs are not part of the future solutions at all.
+        # fixing_all_nonzero_constraints = []
+        # nonzero_vars = []
+        # for var_name, var in self.optModel.variables.items():
+        #     if var.primal > 0:
+        #         nonzero_vars.append(var_name)
+        #         # Setting the variable to zero
+        #         c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
+        #         fixing_all_nonzero_constraints.append(c)
+        #         model.add(c) 
+
+        # print('fixing_all_nonzero_constraints', fixing_all_nonzero_constraints)
+        
+        # self.optModel = model        
+        # self.optModel.optimize()
+
+        # print('FINAL optlang model', model)
+
+        # # Print the results on the screen 
+        # print("status:", self.optModel.status)
+        # print("objective value:", self.optModel.objective.value)
+        # print("----------")
+        # for var_name, var in self.optModel.variables.items():
+        #     print(var_name, "=", var.primal)
+
+        # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
+        # self.validate(nasheq_cells, method="Method 1 — nonzero"))
+        # self.game.payoff_matrix = original_payoff_matrix
+        
+        # # Extremely important step
+        # model.remove(fixing_all_nonzero_constraints)
+        # print('Original payoff matrix', self.game.payoff_matrix)
+
         # Method 2a
         # print("\n Method 2a \n")
         # # For each non-zero α whose optimal value is α^opt, add on of the 
