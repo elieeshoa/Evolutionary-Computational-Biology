@@ -264,7 +264,7 @@ class NashEqFinder(object):
         # optModel.P.pprint()
         # optModel.I.pprint()
         optModel.NashCond = Constraint(optModel.P,optModel.I, rule=NashCond_rule)
-        optModel.pprint()
+        # optModel.pprint()
         
         #         Key                                   : Lower : Body                                             : Upper : Active
         # ('column', 'row', 'C', 'column', 'C') :  -Inf :                       -6*(1 - y[row,C,column,C]) :  -1.0 :   True
@@ -286,17 +286,17 @@ class NashEqFinder(object):
         #         print('index ', i)
         #         print(type(i))
         #         optlangOptModel.add(optlang.interface.Constraint(optlang_NashCond_rule(optlangOptModel, player, i), lb=0))
-        print("DAISIES")
+        # print("DAISIES")
         model = optlang.Model(name='Original Model')
         model.players = self.game.players_names
         model.indices = [tuple([k3 for k2 in k1 for k3 in k2]) for k1 in self.game.payoff_matrix.keys()]
         
-        print(self.game.players_names)
+        # print(self.game.players_names)
         # model.players = FiniteSet(*self.game.players_names) 
         # model.indices = FiniteSet(*[tuple([k3 for k2 in k1 for k3 in k2]) for k1 in self.game.payoff_matrix.keys()])
         
-        print(model.players)
-        print(model.indices)
+        # print(model.players)
+        # print(model.indices)
         # optlang.Constraint(optlang_NashCond_rule(model, player, index), lb=0)
 
         variables_names = []
@@ -315,13 +315,13 @@ class NashEqFinder(object):
         model.objective = optlang.Objective(expression=sympy.Add(*sympy.symbols(variables_names)), direction='max')
 
         
-        for player in model.players:
-            for index in model.indices:
-                print('player ', player)
-                print('index ', index)
-                print(type(index))
-                # print(optlang_NashCond_rule(model, player, index))
-                add_optlang_NashCond_rule(model, player, index)
+        # for player in model.players:
+        #     for index in model.indices:
+        #         print('player ', player)
+        #         print('index ', index)
+        #         print(type(index))
+        #         # print(optlang_NashCond_rule(model, player, index))
+        #         add_optlang_NashCond_rule(model, player, index)
         # cons = optlang.Constraint(optlang.Constraint(optlang_NashCond_rule(model, model.players, model.indices), lb=0))
         # print(cons)
 
@@ -390,7 +390,7 @@ class NashEqFinder(object):
             for index in model.indices:
                 # print('player ', player)
                 # print('index ', index)
-                print(type(index))
+                # print(type(index))
                 add_optlang_NashCond_rule(model, player, index)
 
         print('FINAL optlang model', model)
