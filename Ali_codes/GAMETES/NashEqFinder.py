@@ -1077,74 +1077,149 @@ class NashEqFinder(object):
 
 
 
+        # # Method 2b
+        # print("\n Preventing alphas from being their optimal value \n")
+        # # For each non-zero α whose optimal value is α^opt, add the following
+        # # constraints:
+        # #                       α≤α^opt-ϵ  &  α≥ α^opt+ϵ
+        # # Where, ϵ is a parameter provided by the user. We should try both 
+        # # small (e.g., 0.01) and large (e.g., 0.5) values. For example, if 
+        # # α^opt=1, examine the following values for ϵ=[0.1,0.2,…,0.9]
+
+        # preventing_opt_constraints = []
+        # preventing_variables_names = copy.deepcopy(variables_names)
+        # # for epsilon in [0.01, 0.5]:
+        # epsilon = 0.5
+        # for var_name, var in self.optModel.variables.items():
+        #     # Didn't work without it, which is weird
+        #     if var.primal > 0:
+        #         a_opt = var.primal
+        #         a = model.variables[var_name]
+        #         # Add the variable of the absolute difference
+        #         str_index = var_name + "_diff"
+        #         a_diff = optlang.Variable(str_index, lb=0, type='continuous', problem=model)
+        #         model.add(a_diff)
+        #         preventing_variables_names.append(str_index)
+
+
+        #         # a = 3
+        #         # a_opt = 5
+        #         # a_diff >= -2 
+        #         # a_diff >= 2
+
+        #         # if a_diff > eps then we want |a - a_opt| > eps
+        #         # meaning a - a_opt > eps
+        #         # and     a - a_opt > -eps
+        #         # and minimize a - a_opt (which we already are doing)
+
+        #         # Add the constraints
+        #         # # a_diff >= a - a_opt + epsilon
+        #         # c1 = optlang.Constraint(a_diff - a + a_opt, lb=0)
+        #         # # a_diff >= - (a - a_opt + epsilon)
+        #         # c2 = optlang.Constraint(a_diff + a - a_opt, lb=0)
+        #         # # a_diff >= epsilon
+        #         # c3 = optlang.Constraint(a_diff - epsilon, lb=0)
+
+        #         print('a_opt is', a_opt)
+        #         c1 = optlang.Constraint(a - a_opt - epsilon, lb=0)
+        #         # a_diff >= - (a - a_opt + epsilon)
+        #         c2 = optlang.Constraint(- epsilon - a + a_opt, lb=0)
+        #         # # a_diff >= epsilon
+        #         c3 = optlang.Constraint(a - 3 * epsilon, lb=0)
+
+        #         preventing_opt_constraints.append(c1)
+        #         preventing_opt_constraints.append(c2)
+        #         preventing_opt_constraints.append(c3)
+        #         model.add(c1)
+        #         model.add(c2)
+        #         model.add(c3)
+            
+        # model.objective = optlang.Objective(expression=sympy.Add(*sympy.symbols(preventing_variables_names)), direction='min')
+        
+        # print('preventing_opt_constraints', preventing_opt_constraints)
+        
+        # self.optModel = model        
+        # self.optModel.optimize()
+
+        # print('FINAL optlang model for prevention', model)
+
+        # # Print the results on the screen 
+        # print("status:", self.optModel.status)
+        # print("objective value:", self.optModel.objective.value)
+        # print("----------")
+        # for var_name, var in self.optModel.variables.items():
+        #     print(var_name, "=", var.primal)
+
+        # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
+        # self.validate(nasheq_cells, method="Method 2b")
+        # self.game.payoff_matrix = original_payoff_matrix
+        
+        # # Extremely important step
+        # model.remove(preventing_opt_constraints)
+        # print('Original payoff matrix', self.game.payoff_matrix)
 
 
 
-        # Method 2b
-        print("\n Preventing alphas from being their optimal value \n")
+
+        # Method 2c
+        print("\n Using binary variables \n")
         # For each non-zero α whose optimal value is α^opt, add the following
         # constraints:
-        #                       α≤α^opt-ϵ  &  α≥ α^opt+ϵ
-        # Where, ϵ is a parameter provided by the user. We should try both 
-        # small (e.g., 0.01) and large (e.g., 0.5) values. For example, if 
-        # α^opt=1, examine the following values for ϵ=[0.1,0.2,…,0.9]
+        #                      α≤α^opt-ϵ  &  α≥ α^opt+ϵ
 
-        preventing_opt_constraints = []
-        preventing_variables_names = copy.deepcopy(variables_names)
-        # for epsilon in [0.01, 0.5]:
-        epsilon = 0.5
+        #                     α≤〖(1-y)(α〗^opt-ϵ)+y〖UB〗_α    
+        #                     〖α≥y(α〗^opt+ϵ)+(1-y)LB_α 
+
+        # Note that if y=0, the first constraint is reduced to α≤α^opt-ϵ and 
+        # the second constraint is reduced to α≥〖LB〗_α. On the other hand, 
+        # if y=1, the first constraint is reduced to α≤UB_α and the second 
+        # constraint is reducd to 〖α≥α〗^opt+ϵ. Instead of LB_α and UB_α, 
+        # you can use the big-M approach too, i.e., replaced them with -M and 
+        # M, respectively. 
+
+        binary_constraints = []
+        binary_variables_names = copy.deepcopy(variables_names)
+
+        epsilon = 20
+        ub = 1000
+        lb = -1000
         for var_name, var in self.optModel.variables.items():
             # Didn't work without it, which is weird
             if var.primal > 0:
                 a_opt = var.primal
                 a = model.variables[var_name]
-                # Add the variable of the absolute difference
-                str_index = var_name + "_diff"
-                a_diff = optlang.Variable(str_index, lb=0, type='continuous', problem=model)
-                model.add(a_diff)
-                preventing_variables_names.append(str_index)
+                # Add the binary variable
+                str_index = var_name + "_binary"
+                y = optlang.Variable(str_index, lb=0, type='binary', problem=model)
+                model.add(y)
+                binary_variables_names.append(str_index)
 
+                c1 = optlang.Constraint(
+                        (1 - y) * (a_opt - epsilon) + y * ub - a,
+                        lb = 0
+                    )
+                c2 = optlang.Constraint(
+                    a - y * (a_opt + epsilon) - (1 - y) * lb,
+                    lb=0
+                    )
 
-                # a = 3
-                # a_opt = 5
-                # a_diff >= -2 
-                # a_diff >= 2
-
-                # if a_diff > eps then we want |a - a_opt| > eps
-                # meaning a - a_opt > eps
-                # and     a - a_opt > -eps
-                # and minimize a - a_opt (which we already are doing)
-
-                # Add the constraints
-                # # a_diff >= a - a_opt + epsilon
-                # c1 = optlang.Constraint(a_diff - a + a_opt, lb=0)
-                # # a_diff >= - (a - a_opt + epsilon)
-                # c2 = optlang.Constraint(a_diff + a - a_opt, lb=0)
-                # # a_diff >= epsilon
-                # c3 = optlang.Constraint(a_diff - epsilon, lb=0)
-
-                print('a_opt is', a_opt)
-                c1 = optlang.Constraint(a - a_opt - epsilon, lb=0)
-                # a_diff >= - (a - a_opt + epsilon)
-                c2 = optlang.Constraint(- epsilon - a + a_opt, lb=0)
-                # # a_diff >= epsilon
-                c3 = optlang.Constraint(a - 3 * epsilon, lb=0)
-
-                preventing_opt_constraints.append(c1)
-                preventing_opt_constraints.append(c2)
-                preventing_opt_constraints.append(c3)
+                binary_constraints.append(c1)
+                binary_constraints.append(c2)
                 model.add(c1)
                 model.add(c2)
-                model.add(c3)
             
-        model.objective = optlang.Objective(expression=sympy.Add(*sympy.symbols(preventing_variables_names)), direction='min')
+        model.objective = \
+            optlang.Objective(
+                expression=sympy.Add(*sympy.symbols(binary_variables_names)),
+                direction='min'
+            )
         
-        print('preventing_opt_constraints', preventing_opt_constraints)
+        print('binary_opt_constraints', binary_constraints)
         
         self.optModel = model        
         self.optModel.optimize()
 
-        print('FINAL optlang model for prevention', model)
+        print('FINAL optlang model for binary — Method 2c', model)
 
         # Print the results on the screen 
         print("status:", self.optModel.status)
@@ -1154,11 +1229,11 @@ class NashEqFinder(object):
             print(var_name, "=", var.primal)
 
         original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-        self.validate(nasheq_cells, method="Method 2b")
+        self.validate(nasheq_cells, method="Method 2c")
         self.game.payoff_matrix = original_payoff_matrix
         
         # Extremely important step
-        model.remove(preventing_opt_constraints)
+        model.remove(binary_constraints)
         print('Original payoff matrix', self.game.payoff_matrix)
 
         
