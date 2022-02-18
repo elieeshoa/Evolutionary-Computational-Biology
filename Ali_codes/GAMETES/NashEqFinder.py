@@ -26,6 +26,7 @@ Please contact Ali Zomorrodi at ali.r.zomorrodi@gmail.com for questions and upda
 """
 
 from __future__ import division
+from operator import concat
 import re, sys, math, copy, time, random
 from datetime import timedelta
 from numpy import nonzero  # To convert elapsed time to hh:mm:ss format
@@ -36,6 +37,7 @@ sys.path.append('/Users/elieeshoa/Dropbox/Elie_Eshoa/Ali_codes/')
 from pyomoSolverCreator import *
 import optlang
 import sympy
+import matplotlib.pyplot as mpl
 
 # The following lines change the temporary directory for pyomo
 # from pyutilib.services import TempfileManager
@@ -682,8 +684,73 @@ class NashEqFinder(object):
 
         return [self.Nash_equilibria,self.exit_flag]
 
+
     # Elie
-    def validate(self, nasheq_cells):
+    def show_matrix(self, payoff_matrix, nash_equilibria, strategies, method):        
+        fig, ax = mpl.subplots()
+        fig.patch.set_visible(False)
+        ax.axis('off')
+        ax.axis('tight')
+
+        def payoffs_to_table(payoff_matrix): 
+            col_text =  [''] + strategies
+            # table_text = []
+            # for i in strategies:
+            #     for j in strategies:
+            #         table_text.append([i, (payoff_matrix[(('row',i),('column',j))]['row'], \
+            #             payoff_matrix[(('row',i),('column',j))]['column']), \
+            #             (payoff_matrix[(('row',i),('column',j))]['row'], \
+            #             payoff_matrix[(('row',i),('column',j))]['column'])])
+            table_text = [
+                    ["C", (payoff_matrix[(('row','C'),('column','C'))]['row'], \
+                        payoff_matrix[(('row','C'),('column','C'))]['column']), \
+                        (payoff_matrix[(('row','C'),('column','D'))]['row'], \
+                        payoff_matrix[(('row','C'),('column','D'))]['column'])], \
+                    ["D", (payoff_matrix[(('row','D'),('column','C'))]['row'], \
+                        payoff_matrix[(('row','D'),('column','C'))]['column']), \
+                        (payoff_matrix[(('row','D'),('column','D'))]['row'], \
+                        payoff_matrix[(('row','D'),('column','D'))]['column'])]
+                    ]
+
+            return col_text, table_text
+
+
+        table = payoffs_to_table(payoff_matrix)
+        the_table = ax.table(colWidths=[.3,.3,.3],
+                            cellText=table[1], colLabels=table[0],
+                            loc='center', bbox=[-0.05, 0, 1.1, 1.0],
+                            rowLoc='center', colLoc='center', cellLoc='center')
+        the_table.scale(1, 7)
+
+        def letter_to_position(letter):
+            if letter == 'C':
+                return 1
+            if letter == 'D':
+                return 2
+
+        # print(letter_to_position(nash_equilibria[0][0][1]))
+            
+        the_table[letter_to_position(nash_equilibria[0][0][1]), letter_to_position(nash_equilibria[0][1][1])].set_facecolor('#5dbcd2')
+
+        for (row, col), cell in the_table.get_celld().items():
+            # the_table.auto_set_column_width(col)
+            cell.visible_edges = ''
+            if (col == 1 and row == 1) or \
+            (col == 1 and row == 2) or \
+            (col == 2 and row == 1) or \
+            (col == 2 and row == 2):
+                cell.visible_edges = 'closed'
+                # cell.visible_edges = 'horizontal'
+            # if (col == 1 and row == 1):
+            #     cell.visible_edges = ''
+
+        mpl.savefig(method + '.png')
+        mpl.show()
+
+
+
+    # Elie
+    def validate(self, nasheq_cells, method):
         # Validation: needs removal of hard coded methods
         print("\n Validation \n")
         def string_to_index(string):
@@ -716,7 +783,7 @@ class NashEqFinder(object):
         #             -self.optModel.variables[current_index + '_' + player + '_' + 'minus'][1].primal())
         #         self.game.payoff_matrix[key][player] += perturbation
 
-        print('New payoff matrix', self.game.payoff_matrix)
+        print('New payoff matrix for', method, self.game.payoff_matrix)
 
         # self.game.payoff_matrix = original_payoff_matrix
 
@@ -743,6 +810,9 @@ class NashEqFinder(object):
                 print('DESIRED STATE', desired_state, "FAILED")
                 for var_name, var in self.optModel.variables.items():
                     print(var_name, "=", var.primal)
+
+        print('self.game.players_strategies', self.game.players_strategies)
+        self.show_matrix(self.game.payoff_matrix, Nash_equilibria, self.game.players_strategies['row'], method)
 
     # Elie
     def newEquilibria(self, nasheq_cells, strategies):
@@ -870,7 +940,9 @@ class NashEqFinder(object):
 
         original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
 
-        self.validate(nasheq_cells)
+
+
+        self.validate(nasheq_cells, method="Original Model")
         # # Validation: needs removal of hard coded methods
         # print("\n Validation \n")
         # def string_to_index(string):
@@ -922,79 +994,20 @@ class NashEqFinder(object):
         # print ('exit_flag = ',exit_flag)
         # print ('Nash_equilibria = ',Nash_equilibria )
 
-        print("\n Fixing all nonzero alphas \n")
-        # Fix all α's that were non-zero in the current solution at zero, so 
-        # those payoffs are not part of the future solutions at all.
-        fixing_all_nonzero_constraints = []
-        nonzero_vars = []
-        for var_name, var in self.optModel.variables.items():
-            if var.primal > 0:
-                nonzero_vars.append(var_name)
-                # Setting the variable to zero
-                c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
-                fixing_all_nonzero_constraints.append(c)
-                model.add(c) 
-
-        print('fixing_all_nonzero_constraints', fixing_all_nonzero_constraints)
-        
-        self.optModel = model        
-        self.optModel.optimize()
-
-        print('FINAL optlang model', model)
-
-        # Print the results on the screen 
-        print("status:", self.optModel.status)
-        print("objective value:", self.optModel.objective.value)
-        print("----------")
-        for var_name, var in self.optModel.variables.items():
-            print(var_name, "=", var.primal)
-
-        original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-        self.validate(nasheq_cells)
-        self.game.payoff_matrix = original_payoff_matrix
-        
-        # Extremely important step
-        model.remove(fixing_all_nonzero_constraints)
-        print('Original payoff matrix', self.game.payoff_matrix)
-
-
-        # This is commented out for now
-        # print("\n Preventing alphas from being their optimal value \n")
-        # # For each non-zero α whose optimal value is α^opt, add the following
-        # # constraints:
-        # #                       α≤α^opt-ϵ  &  α≥ α^opt+ϵ
-        # # Where, ϵ is a parameter provided by the user. We should try both 
-        # # small (e.g., 0.01) and large (e.g., 0.5) values. For example, if 
-        # # α^opt=1, examine the following values for ϵ=[0.1,0.2,…,0.9]
-
-        # preventing_opt_constraints = []
-        # preventing_variables_names = copy.deepcopy(variables_names)
-        # # for epsilon in [0.01, 0.5]:
-        # epsilon = 0.01
+        # print("\n Fixing all nonzero alphas \n")
+        # # Fix all α's that were non-zero in the current solution at zero, so 
+        # # those payoffs are not part of the future solutions at all.
+        # fixing_all_nonzero_constraints = []
+        # nonzero_vars = []
         # for var_name, var in self.optModel.variables.items():
-        #     # Adding the constraint
-        #     a_opt = var.primal
-        #     a = model.variables[var_name]
-        #     # Add the variable of the absolute difference
-        #     str_index = var_name + "_diff"
-        #     a_diff = optlang.Variable(str_index, lb=0, type='continuous', problem=model)
-        #     model.add(a_diff)
-        #     preventing_variables_names.append(str_index)
+        #     if var.primal > 0:
+        #         nonzero_vars.append(var_name)
+        #         # Setting the variable to zero
+        #         c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
+        #         fixing_all_nonzero_constraints.append(c)
+        #         model.add(c) 
 
-        #     # Add the constraints
-        #     c1 = optlang.Constraint(a_diff - a + a_opt, lb=0)
-        #     c2 = optlang.Constraint(a_diff + a - a_opt, lb=0)
-        #     c3 = optlang.Constraint(a_diff - epsilon, lb=0)
-        #     preventing_opt_constraints.append(c1)
-        #     preventing_opt_constraints.append(c2)
-        #     preventing_opt_constraints.append(c3)
-        #     model.add(c1)
-        #     model.add(c2)
-        #     model.add(c3)
-            
-        # model.objective = optlang.Objective(expression=sympy.Add(*sympy.symbols(preventing_variables_names)), direction='min')
-        
-        # print('preventing_opt_constraints', preventing_opt_constraints)
+        # print('fixing_all_nonzero_constraints', fixing_all_nonzero_constraints)
         
         # self.optModel = model        
         # self.optModel.optimize()
@@ -1009,14 +1022,145 @@ class NashEqFinder(object):
         #     print(var_name, "=", var.primal)
 
         # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-        # self.validate(nasheq_cells)
+        # self.validate(nasheq_cells, method="Method 1 — nonzero"))
         # self.game.payoff_matrix = original_payoff_matrix
         
         # # Extremely important step
-        # model.remove(preventing_opt_constraints)
+        # model.remove(fixing_all_nonzero_constraints)
         # print('Original payoff matrix', self.game.payoff_matrix)
 
-    
+        # Method 2a
+        # print("\n Method 2a \n")
+        # # For each non-zero α whose optimal value is α^opt, add on of the 
+        # # following constraints:
+        # #                       α≤α^opt-ϵ  &  α≥ α^opt+ϵ
+        # # Where, ϵ is a parameter provided by the user. We should try both 
+        # # small (e.g., 0.01) and large (e.g., 0.5) values. For example, if 
+        # # α^opt=1, examine the following values for ϵ=[0.1,0.2,…,0.9]
+
+        # method_2a_constraints = []
+        # method_2a_variables_names = copy.deepcopy(variables_names)
+        # # for epsilon in [0.01, 0.5]:
+        # epsilon = 0.5
+        # for var_name, var in self.optModel.variables.items():
+        #     # Didn't work without it, which is weird
+        #     if var.primal > 0:
+        #         a_opt = var.primal
+        #         a = model.variables[var_name]
+        #         # Add the constraints
+        #         # c1 = optlang.Constraint(a - a_opt - epsilon, lb=0)
+        #         c1 = optlang.Constraint(a_opt - a - epsilon, lb=0)
+        #         method_2a_constraints.append(c1)
+        #         model.add(c1)
+            
+        # model.objective = optlang.Objective(expression=sympy.Add(*sympy.symbols(method_2a_variables_names)), direction='min')
+        
+        # self.optModel = model        
+        # self.optModel.optimize()
+
+        # print('FINAL optlang model for method 2a', model)
+
+        # # Print the results on the screen 
+        # print("status:", self.optModel.status)
+        # print("objective value:", self.optModel.objective.value)
+        # print("----------")
+        # for var_name, var in self.optModel.variables.items():
+        #     print(var_name, "=", var.primal)
+
+        # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
+        # self.validate(nasheq_cells, method="Method 2a with epsilon = " + str(epsilon))
+        # self.game.payoff_matrix = original_payoff_matrix
+        
+        # # Extremely important step
+        # model.remove(method_2a_constraints)
+        # print('Original payoff matrix', self.game.payoff_matrix)
+
+
+
+
+
+
+        # Method 2b
+        print("\n Preventing alphas from being their optimal value \n")
+        # For each non-zero α whose optimal value is α^opt, add the following
+        # constraints:
+        #                       α≤α^opt-ϵ  &  α≥ α^opt+ϵ
+        # Where, ϵ is a parameter provided by the user. We should try both 
+        # small (e.g., 0.01) and large (e.g., 0.5) values. For example, if 
+        # α^opt=1, examine the following values for ϵ=[0.1,0.2,…,0.9]
+
+        preventing_opt_constraints = []
+        preventing_variables_names = copy.deepcopy(variables_names)
+        # for epsilon in [0.01, 0.5]:
+        epsilon = 0.5
+        for var_name, var in self.optModel.variables.items():
+            # Didn't work without it, which is weird
+            if var.primal > 0:
+                a_opt = var.primal
+                a = model.variables[var_name]
+                # Add the variable of the absolute difference
+                str_index = var_name + "_diff"
+                a_diff = optlang.Variable(str_index, lb=0, type='continuous', problem=model)
+                model.add(a_diff)
+                preventing_variables_names.append(str_index)
+
+
+                # a = 3
+                # a_opt = 5
+                # a_diff >= -2 
+                # a_diff >= 2
+
+                # if a_diff > eps then we want |a - a_opt| > eps
+                # meaning a - a_opt > eps
+                # and     a - a_opt > -eps
+                # and minimize a - a_opt (which we already are doing)
+
+                # Add the constraints
+                # # a_diff >= a - a_opt + epsilon
+                # c1 = optlang.Constraint(a_diff - a + a_opt, lb=0)
+                # # a_diff >= - (a - a_opt + epsilon)
+                # c2 = optlang.Constraint(a_diff + a - a_opt, lb=0)
+                # # a_diff >= epsilon
+                # c3 = optlang.Constraint(a_diff - epsilon, lb=0)
+
+                print('a_opt is', a_opt)
+                c1 = optlang.Constraint(a - a_opt - epsilon, lb=0)
+                # a_diff >= - (a - a_opt + epsilon)
+                c2 = optlang.Constraint(- epsilon - a + a_opt, lb=0)
+                # # a_diff >= epsilon
+                c3 = optlang.Constraint(a - 3 * epsilon, lb=0)
+
+                preventing_opt_constraints.append(c1)
+                preventing_opt_constraints.append(c2)
+                preventing_opt_constraints.append(c3)
+                model.add(c1)
+                model.add(c2)
+                model.add(c3)
+            
+        model.objective = optlang.Objective(expression=sympy.Add(*sympy.symbols(preventing_variables_names)), direction='min')
+        
+        print('preventing_opt_constraints', preventing_opt_constraints)
+        
+        self.optModel = model        
+        self.optModel.optimize()
+
+        print('FINAL optlang model for prevention', model)
+
+        # Print the results on the screen 
+        print("status:", self.optModel.status)
+        print("objective value:", self.optModel.objective.value)
+        print("----------")
+        for var_name, var in self.optModel.variables.items():
+            print(var_name, "=", var.primal)
+
+        original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
+        self.validate(nasheq_cells, method="Method 2b")
+        self.game.payoff_matrix = original_payoff_matrix
+        
+        # Extremely important step
+        model.remove(preventing_opt_constraints)
+        print('Original payoff matrix', self.game.payoff_matrix)
+
         
 
 #--------- Sample implementation ------
