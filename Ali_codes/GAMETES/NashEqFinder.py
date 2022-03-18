@@ -555,10 +555,11 @@ class NashEqFinder(object):
                 row = [i]
                 for j in strategies:
                     row.append(
-                        (payoff_matrix[(('row', i),('column', j))]['row'], \
-                        payoff_matrix[(('row', i),('column', j))]['column'])
+                        (round(payoff_matrix[(('row', i),('column', j))]['row'], 4), \
+                        round(payoff_matrix[(('row', i),('column', j))]['column'], 4))
                     )
                 table_text.append(row)
+                print("dis row", row)
 
             return col_text, table_text
 
@@ -584,7 +585,7 @@ class NashEqFinder(object):
             if col != 0 and row != 0:
                 cell.visible_edges = 'closed'
 
-        mpl.savefig(method + '.png')
+        mpl.savefig(method + '.png', dpi=300)
         mpl.show()
 
         
@@ -698,6 +699,21 @@ class NashEqFinder(object):
                 current_cell = ((cell[0][0], strategy), (cell[1]))
                 current_index = strip_down(current_cell)
                 player = model.players[0]
+                # This old snippet does not preclude cells other than 
+                # `nasheq_cells` to be a Nash equilibrium
+                # c = optlang.Constraint(
+                #         self.game.payoff_matrix[cell][player] \
+                #         + model.variables[root_index+'_'+player+'_plus'] \
+                #         - model.variables[root_index+'_'+player+'_minus'] \
+                #         - 
+                #         (self.game.payoff_matrix[current_cell][player] \
+                #         + model.variables[current_index+'_'+player+'_plus'] \
+                #         - model.variables[current_index+'_'+player+'_minus']
+                #         ), lb=0)
+
+                # This new snippet precludes cells other than `nasheq_cells` 
+                # to be a Nash equilibrium
+                epsilon = 0.01
                 c = optlang.Constraint(
                         self.game.payoff_matrix[cell][player] \
                         + model.variables[root_index+'_'+player+'_plus'] \
@@ -706,7 +722,9 @@ class NashEqFinder(object):
                         (self.game.payoff_matrix[current_cell][player] \
                         + model.variables[current_index+'_'+player+'_plus'] \
                         - model.variables[current_index+'_'+player+'_minus']
-                        ), lb=0)
+                        )
+                        -
+                        epsilon, lb=0)
                 constraints.append(c)
 
             # For second player we loop over second axis (rows=strategies)
@@ -742,7 +760,7 @@ class NashEqFinder(object):
 
         original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
 
-        self.validate(nasheq_cells, method=f'Original Model with new equilibria={nasheq_cells}')
+        self.validate(nasheq_cells, method=f'Original Model with new equilibria={nasheq_cells} precluded')
 
         self.game.payoff_matrix = original_payoff_matrix
 
@@ -800,7 +818,7 @@ class NashEqFinder(object):
         # method_2a_variables_names = copy.deepcopy(variables_names)
         # # print('[0.1 * x for x in range(1, 11)]', [0.1 * x for x in range(1, 11)])
         # # for epsilon in [0.1 * x for x in range(1, 11)]:
-        # epsilon = 1
+        # epsilon = 0.9
         # for var_name, var in self.optModel.variables.items():
         #     # Didn't work without it, which is weird
         #     if var.primal > 0:
@@ -827,7 +845,7 @@ class NashEqFinder(object):
         #     print(var_name, "=", var.primal)
 
         # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-        # self.validate(nasheq_cells, method="Method 2a with epsilon = " + str(epsilon))
+        # self.validate(nasheq_cells, method="Method 2a with epsilon = " + str(epsilon) + f" with new equilibria={nasheq_cells} precluded")
         # self.game.payoff_matrix = original_payoff_matrix
         
         # # Extremely important step
@@ -978,7 +996,7 @@ class NashEqFinder(object):
         self.optModel = model        
         self.optModel.optimize()
 
-        print('FINAL optlang model for binary — Method 2c', model)
+        print('FINAL optlang model for binary — Method 2c precluded', model)
 
         # Print the results on the screen 
         print("status:", self.optModel.status)
@@ -988,7 +1006,7 @@ class NashEqFinder(object):
             print(var_name, "=", var.primal)
 
         original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-        self.validate(nasheq_cells, method="Method 2c")
+        self.validate(nasheq_cells, method=f"Method 2c with new equilibria={nasheq_cells} precluded")
         self.game.payoff_matrix = original_payoff_matrix
         
         # Extremely important step
@@ -1011,10 +1029,11 @@ def show_matrix(payoff_matrix, nash_equilibria, strategies, method):
             row = [i]
             for j in strategies:
                 row.append(
-                    (payoff_matrix[(('row', i),('column', j))]['row'], \
-                    payoff_matrix[(('row', i),('column', j))]['column'])
+                    (round(payoff_matrix[(('row', i),('column', j))]['row'], 4), \
+                     round(payoff_matrix[(('row', i),('column', j))]['column'], 4))
                 )
             table_text.append(row)
+            print("dis row", row)
 
         return col_text, table_text
 
