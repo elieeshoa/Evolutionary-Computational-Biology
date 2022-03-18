@@ -513,6 +513,8 @@ class NashEqFinder(object):
                    elapsed_optlang_wt, elapsed_solver_pt,elapsed_solver_wt, \
                    elapsed_run_pt,elapsed_run_wt, \
                    len(self.game.payoff_matrix)) )
+        
+        # return show_matrix(self, self.game.payoff_matri, self.Nash_equilibria, self.strategies, method + "called by optlangFindPure")       
     
     def run(self):
         """
@@ -536,7 +538,7 @@ class NashEqFinder(object):
         elif self.NashEq_type.lower() == 'mixed':
             pass # To be completed
 
-        return [self.Nash_equilibria,self.exit_flag]
+        return [self.Nash_equilibria, self.exit_flag, self.game.payoff_matrix]
 
 
     # Elie
@@ -571,10 +573,11 @@ class NashEqFinder(object):
         def letter_to_position(letter):
             return strategies.index(letter) + 1
             
-        the_table[
-            letter_to_position(nash_equilibria[0][0][1]), 
-            letter_to_position(nash_equilibria[0][1][1])
-            ].set_facecolor('#5dbcd2')
+        for eq in range(len(nash_equilibria)):
+            the_table[
+                letter_to_position(nash_equilibria[eq][0][1]), 
+                letter_to_position(nash_equilibria[eq][1][1])
+                ].set_facecolor('#5dbcd2')
 
         for (row, col), cell in the_table.get_celld().items():
             cell.visible_edges = ''
@@ -584,10 +587,12 @@ class NashEqFinder(object):
         mpl.savefig(method + '.png')
         mpl.show()
 
+        
+
     # Elie
     def validate(self, nasheq_cells, method):
         # Validation: needs removal of hard coded methods
-        print("\n Validation for method %s\n", method)
+        print(f"\n Validation for method {method}\n")
 
         # Helper function
         def string_to_index(string):
@@ -597,6 +602,7 @@ class NashEqFinder(object):
             return (((lst[0],lst[1]), (lst[2],lst[3]))), player, sign
 
         original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
+        
 
         # Creating new payoff matrix (i.e. the result of perterbations)
         for var_name, var in self.optModel.variables.items():
@@ -612,12 +618,15 @@ class NashEqFinder(object):
         
         # Define an instance of the NashEqFinder
         NashEqFinderInst = NashEqFinder(self.game, stdout_msgs = True)
-        [Nash_equilibria,exit_flag] = NashEqFinderInst.optlangRun()
+        [Nash_equilibria, exit_flag, _game_payoff_matrix] = NashEqFinderInst.optlangRun()
 
-        print("DONE")
+
+        self.show_matrix(original_payoff_matrix, Nash_equilibria, self.game.players_strategies['row'], method="Original_solution")
+
         
-        print ('exit_flag = ',exit_flag)
-        print ('Nash_equilibria = ',Nash_equilibria )
+        print(f"Validation for {method} returned these results:")
+        print ('exit_flag = ', exit_flag)
+        print ('Nash_equilibria = ', Nash_equilibria)
         for desired_state in nasheq_cells:
             if list(desired_state) in Nash_equilibria:
                 print('DESIRED STATE', desired_state, "ACHIEVED with these perturbations")
@@ -630,6 +639,7 @@ class NashEqFinder(object):
 
         print('self.game.players_strategies', self.game.players_strategies)
         self.show_matrix(self.game.payoff_matrix, Nash_equilibria, self.game.players_strategies['row'], method)
+        print(f"DONE Validation of {method}")
 
     # Elie
     def newEquilibria(self, nasheq_cells, strategies):
@@ -645,10 +655,13 @@ class NashEqFinder(object):
         As the objective function then, you minimize sum of all aa^+'s and 
         aa^-'s for all payoff. 
 
+        return: a model with the solutions' final model, which contains the 
+                optimal value of the variables and more
+
         """   
 
         # Adding new variables 
-        model = optlang.Model(name='Original Model')
+        model = optlang.Model(name=f'Original Model')
         model.players = self.game.players_names
         indices = [tuple([k3 for k2 in k1 for k3 in k2]) for k1 in self.game.payoff_matrix.keys()]
         new_indices = []
@@ -729,49 +742,52 @@ class NashEqFinder(object):
 
         original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
 
-        self.validate(nasheq_cells, method="Original Model")
+        self.validate(nasheq_cells, method=f'Original Model with new equilibria={nasheq_cells}')
 
         self.game.payoff_matrix = original_payoff_matrix
 
         print('Original payoff matrix', self.game.payoff_matrix)
+
+        # return self.optModel, self.game
+
+
+    # # def method_2a()
+    #     print("\n Fixing all nonzero alphas \n")
+    #     # Fix all α's that were non-zero in the current solution at zero, so 
+    #     # those payoffs are not part of the future solutions at all.
+    #     fixing_all_nonzero_constraints = []
+    #     nonzero_vars = []
+    #     for var_name, var in self.optModel.variables.items():
+    #         if var.primal > 0:
+    #             nonzero_vars.append(var_name)
+    #             # Setting the variable to zero
+    #             c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
+    #             fixing_all_nonzero_constraints.append(c)
+    #             model.add(c) 
+
+    #     print('fixing_all_nonzero_constraints', fixing_all_nonzero_constraints)
         
+    #     self.optModel = model        
+    #     self.optModel.optimize()
 
-        # print("\n Fixing all nonzero alphas \n")
-        # # Fix all α's that were non-zero in the current solution at zero, so 
-        # # those payoffs are not part of the future solutions at all.
-        # fixing_all_nonzero_constraints = []
-        # nonzero_vars = []
-        # for var_name, var in self.optModel.variables.items():
-        #     if var.primal > 0:
-        #         nonzero_vars.append(var_name)
-        #         # Setting the variable to zero
-        #         c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
-        #         fixing_all_nonzero_constraints.append(c)
-        #         model.add(c) 
+    #     print('FINAL optlang model', model)
 
-        # print('fixing_all_nonzero_constraints', fixing_all_nonzero_constraints)
+    #     # Print the results on the screen 
+    #     print("status:", self.optModel.status)
+    #     print("objective value:", self.optModel.objective.value)
+    #     print("----------")
+    #     for var_name, var in self.optModel.variables.items():
+    #         print(var_name, "=", var.primal)
+
+    #     original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
+    #     self.validate(nasheq_cells, method="Method 1 — nonzero")
+    #     self.game.payoff_matrix = original_payoff_matrix
         
-        # self.optModel = model        
-        # self.optModel.optimize()
+    #     # Extremely important step
+    #     model.remove(fixing_all_nonzero_constraints)
+    #     print('Original payoff matrix', self.game.payoff_matrix)
 
-        # print('FINAL optlang model', model)
-
-        # # Print the results on the screen 
-        # print("status:", self.optModel.status)
-        # print("objective value:", self.optModel.objective.value)
-        # print("----------")
-        # for var_name, var in self.optModel.variables.items():
-        #     print(var_name, "=", var.primal)
-
-        # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-        # self.validate(nasheq_cells, method="Method 1 — nonzero"))
-        # self.game.payoff_matrix = original_payoff_matrix
-        
-        # # Extremely important step
-        # model.remove(fixing_all_nonzero_constraints)
-        # print('Original payoff matrix', self.game.payoff_matrix)
-
-        # Method 2a
+        # # Method 2a
         # print("\n Method 2a \n")
         # # For each non-zero α whose optimal value is α^opt, add on of the 
         # # following constraints:
@@ -782,8 +798,9 @@ class NashEqFinder(object):
 
         # method_2a_constraints = []
         # method_2a_variables_names = copy.deepcopy(variables_names)
-        # # for epsilon in [0.01, 0.5]:
-        # epsilon = 0.5
+        # # print('[0.1 * x for x in range(1, 11)]', [0.1 * x for x in range(1, 11)])
+        # # for epsilon in [0.1 * x for x in range(1, 11)]:
+        # epsilon = 1
         # for var_name, var in self.optModel.variables.items():
         #     # Didn't work without it, which is weird
         #     if var.primal > 0:
@@ -922,7 +939,7 @@ class NashEqFinder(object):
         binary_constraints = []
         binary_variables_names = copy.deepcopy(variables_names)
 
-        epsilon = 20
+        epsilon = 0.01
         ub = 1000
         lb = -1000
         for var_name, var in self.optModel.variables.items():
@@ -978,7 +995,53 @@ class NashEqFinder(object):
         model.remove(binary_constraints)
         print('Original payoff matrix', self.game.payoff_matrix)
 
+
+
+# Elie
+def show_matrix(payoff_matrix, nash_equilibria, strategies, method):        
+    fig, ax = mpl.subplots()
+    fig.patch.set_visible(False)
+    ax.axis('off')
+    ax.axis('tight')
+
+    def payoffs_to_table(payoff_matrix): 
+        col_text =  [''] + strategies
+        table_text = []
+        for i in strategies:
+            row = [i]
+            for j in strategies:
+                row.append(
+                    (payoff_matrix[(('row', i),('column', j))]['row'], \
+                    payoff_matrix[(('row', i),('column', j))]['column'])
+                )
+            table_text.append(row)
+
+        return col_text, table_text
+
+
+    table = payoffs_to_table(payoff_matrix)
+    the_table = ax.table(colWidths=[.3,.3,.3],
+                        cellText=table[1], colLabels=table[0],
+                        loc='center', bbox=[-0.05, 0, 1.1, 1.0],
+                        rowLoc='center', colLoc='center', cellLoc='center')
+    the_table.scale(1, 7)
+
+    def letter_to_position(letter):
+        return strategies.index(letter) + 1
         
+    for eq in range(len(nash_equilibria)):
+        the_table[
+            letter_to_position(nash_equilibria[eq][0][1]), 
+            letter_to_position(nash_equilibria[eq][1][1])
+            ].set_facecolor('#5dbcd2')
+
+    for (row, col), cell in the_table.get_celld().items():
+        cell.visible_edges = ''
+        if col != 0 and row != 0:
+            cell.visible_edges = 'closed'
+
+    mpl.savefig(method + '.png')
+    mpl.show()
 
 #--------- Sample implementation ------
 if __name__ == "__main__":
@@ -1010,8 +1073,10 @@ if __name__ == "__main__":
     # Define an instance of the NashEqFinder
     NashEqFinderInst = NashEqFinder(PD, stdout_msgs = True)
     # [Nash_equilibria,exit_flag] = NashEqFinderInst.run()
-    # [Nash_equilibria,exit_flag] = NashEqFinderInst.optlangRun()
-    NashEqFinderInst.newEquilibria(nasheq_cells=[(('row','C'),('column','D'))], strategies=['C', 'D'])
+    # [Nash_equilibria, exit_flag, game_payoff_matrix] = NashEqFinderInst.optlangRun()
+    # show_matrix(game_payoff_matrix, Nash_equilibria, players_strategies['row'], "Original Game called by optlangFindPure")       
+
+    NashEqFinderInst.newEquilibria(nasheq_cells=[(('row','C'), ('column','D'))], strategies=['C', 'D'])
 
     # # Validation:
     # payoff_matrix = {}
