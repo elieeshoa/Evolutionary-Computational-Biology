@@ -1372,6 +1372,8 @@ class NashEqFinder(object):
         # # model.remove(binary_constraints)
         # # print('Original payoff matrix', self.game.payoff_matrix)
 
+        
+
 
 
 # Elie
