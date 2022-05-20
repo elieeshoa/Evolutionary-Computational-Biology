@@ -859,8 +859,25 @@ class NashEqFinder(object):
             print("ADDED columns loop")
         
         print(constraints)
-        model.add(constraints)        
-        self.optModel = model        
+        model.add(constraints)  
+
+       
+
+        self.optModel = model 
+
+         # May 20
+        # Fix all a_opt that are not 0 or binary to be 0
+        # for var_name, var in self.optModel.variables.items():
+        #     if var_name == "row_C_column_D_row_plus":
+        #         c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
+        #         model.add(c) 
+        #     if var_name == "row_D_column_D_row_minus":
+        #         c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
+        #         model.add(c)
+        #     # if var_name not in self.current_binary_variables:
+        #     #     if var.primal != 0:
+        #     #         c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
+        #     #         model.add(c)        
         self.optModel.optimize()
 
         print('FINAL optlang model', model)
@@ -1412,14 +1429,18 @@ class NashEqFinder(object):
             self.current_primals[var_name] = var.primal
 
         # For iteration = 1 to 10
-        for iteration in range(5):
+        for iteration in range(0):
+
+            
+
             print(f"\n\n\n----iteration {iteration + 1}----\n\n\n")
             print(f"----removing binary variables and constrains to start anew----\n")
 
             # Removing binary variables and their specific constraints from
             # model
-            for binary_var in self.current_binary_variables:
-                model.remove(binary_var)
+            # May 20
+            # for binary_var in self.current_binary_variables:
+            #     model.remove(binary_var)
             # for binary_cons in self.current_binary_constraints:
             #     model.remove(binary_cons)
             # Removing binary variables and their specific constraints from
@@ -1430,7 +1451,8 @@ class NashEqFinder(object):
             self.current_variables = [e for e in self.current_variables if e not in self.current_binary_variables]  
             for key_to_remove in self.current_binary_variables:
                 del self.current_primals[key_to_remove]
-            self.current_binary_variables = []
+            # May 20
+            # self.current_binary_variables = []
             # self.current_binary_constraints = []
 
             # remove binary variable to start anew in next iteration
@@ -1482,15 +1504,23 @@ class NashEqFinder(object):
             # return
             # epsilon = 0.01
             ub = 1000
+            # May 20
+            # ub = 5
             lb = -1000
+            
+
+            print(f"Binary variablessss before iteration {iteration+1}:", self.current_binary_variables)
             for var_name, var_primal in self.current_primals.items():
                 # Didn't work without it, which is weird
-                if var_primal > 0:
+                # Check if the variable optimal is positive and if it is not
+                # a binary variable
+                if var_primal > 0 and var_name not in self.current_binary_variables:
                     a_opt = var_primal
                     print(f'a_opt (which is variable {var_name}) for iteration {iteration+1} is', a_opt)
                     a = model.variables[var_name]
                     # Add the binary variable
-                    str_index = var_name + "_binary"
+                    # May 20
+                    str_index = var_name + "_binary" + f"_{iteration}"
                     y = optlang.Variable(str_index, lb=0, type='binary', problem=model)
                     model.add(y)
                     # self.current_variables.append(str_index)
@@ -1521,7 +1551,8 @@ class NashEqFinder(object):
             # add every binary variable to current_variables
             for var in self.current_binary_variables:
                 self.current_variables.append(var)
-            
+            print(f"Binary variablessss after iteration {iteration+1}:", self.current_binary_variables)
+
             print('self.current_binary_constraints:')
             for con in self.current_binary_constraints:
                 print(con) 
