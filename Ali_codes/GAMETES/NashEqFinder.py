@@ -26,9 +26,11 @@ Please contact Ali Zomorrodi at ali.r.zomorrodi@gmail.com for questions and upda
 """
 
 from __future__ import division
+import datetime
 from operator import concat
 import re, sys, math, copy, time, random
 from datetime import timedelta
+from uuid import uuid4
 from numpy import nonzero  # To convert elapsed time to hh:mm:ss format
 from pyomo.environ import *
 from pyomo.opt import *
@@ -42,6 +44,11 @@ import matplotlib.pyplot as mpl
 # The following lines change the temporary directory for pyomo
 # from pyutilib.services import TempfileManager
 # TempfileManager.tempdir = pyomo_tmp_dir
+
+
+SIZE = 20
+
+
 
 class NashEqFinder(object):
     """
@@ -542,7 +549,10 @@ class NashEqFinder(object):
 
 
     # Elie
-    def show_matrix(self, payoff_matrix, nash_equilibria, strategies, method):        
+    def show_matrix(self, payoff_matrix, nash_equilibria, strategies, method): 
+        with open(f"log.txt", "a") as f:
+            f.write(f"\n\nMethod: {method} || Nash Equilibria: {nash_equilibria} || Time: {datetime.datetime.now()}")
+
         fig, ax = mpl.subplots()
         fig.patch.set_visible(False)
         ax.axis('off')
@@ -565,7 +575,7 @@ class NashEqFinder(object):
 
 
         table = payoffs_to_table(payoff_matrix)
-        the_table = ax.table(colWidths=[.3,.3,.3],
+        the_table = ax.table(#colWidths=[.3] * (SIZE + 1),
                             cellText=table[1], colLabels=table[0],
                             loc='center', bbox=[-0.05, 0, 1.1, 1.0],
                             rowLoc='center', colLoc='center', cellLoc='center')
@@ -585,12 +595,42 @@ class NashEqFinder(object):
             if col != 0 and row != 0:
                 cell.visible_edges = 'closed'
 
+
+        nasheq_positions = []
+        for eq in range(len(nash_equilibria)):
+            nasheq_positions.append(
+                (letter_to_position(nash_equilibria[eq][0][1]), \
+                letter_to_position(nash_equilibria[eq][1][1]))
+            )
+
+        the_table.auto_set_font_size(False)
+        for row in range(SIZE+1):
+            for col in range(SIZE+1):
+                if (row, col) not in nasheq_positions:
+                    the_table[row, col].set_fontsize(3.5)
+                else:
+                    the_table[row, col].set_fontsize(1.4)
+
+        # for cell in the_table._cells:
+        #     if the_table._cells[cell].xy not in nasheq_positions:
+        #         text = the_table._cells[cell].get_text()
+        #         text.set_fontsize(3.5)
+
         mpl.savefig(method + '.png', dpi=300)
         mpl.show()
+        # for eq in range(len(nash_equilibria)):
+        #     fontsize = the_table[
+        #         letter_to_position(nash_equilibria[eq][0][1]), 
+        #         letter_to_position(nash_equilibria[eq][1][1])
+        #         ].get_fontsize()
+        #     print("Table fontsize", fontsize)
+        #     exit()
 
 
     # Elie
-    def show_matrix_2c(self, original_payoff_matrix, payoff_matrix, nash_equilibria, strategies, method):        
+    def show_matrix_2c(self, original_payoff_matrix, payoff_matrix, nash_equilibria, strategies, method, changed_cells):  
+        with open(f"log.txt", "a") as f:
+            f.write(f"\n\nMethod: {method} || Nash Equilibria: {nash_equilibria} || Time: {datetime.datetime.now()}")      
         fig, ax = mpl.subplots()
         fig.patch.set_visible(False)
         ax.axis('off')
@@ -608,12 +648,19 @@ class NashEqFinder(object):
                     new2 = payoff_matrix[(('row', i),('column', j))]['column']
                     def check_0(s):
                         if s != '0.0':
-                            return f"+ {s}"
+                            return f" + {s}"
                         else:
                             return ""
+
+                    def remove_zeroes(s):
+                        if s[-2:] == '.0':
+                            return s[:-2]
+                        else:
+                            return s
+
                     row.append(
                         # ("({:s} " + check_0(round(new1 - float(og1), 4)) + ", {:s}" + check_0(round(new2 - float(og2), 4)) + ")").format(str(round(float(og1), 4)), str(round(new1 - float(og1), 4)), str(round(float(og2), 4)), str(round(new2 - float(og2), 4)))
-                        f"({str(round(float(og1), 4))}" + check_0(str(round(new1 - float(og1), 4))) + f", {str(round(float(og2), 4))}" + check_0(str(round(new2 - float(og2), 4))) + ")"
+                        f"({remove_zeroes(str(round(float(og1), 4)))}" + check_0(str(round(new1 - float(og1), 4))) + f", {remove_zeroes(str(round(float(og2), 4)))}" + check_0(str(round(new2 - float(og2), 4))) + ")"
                         # ("{:s} + {:s}".format(str(round(og, 4)), str(round(new1 - og, 4))), \
                         #  "{:s} + {:s}".format(str(round(og, 4)), str(round(new2 - og, 4))))
                     )
@@ -624,11 +671,26 @@ class NashEqFinder(object):
 
 
         table = payoffs_to_table(payoff_matrix)
-        the_table = ax.table(colWidths=[.3,.3,.3],
+        the_table = ax.table(#colWidths=[0.3] * (SIZE + 1),
                             cellText=table[1], colLabels=table[0],
                             loc='center', bbox=[-0.05, 0, 1.1, 1.0],
                             rowLoc='center', colLoc='center', cellLoc='center')
         the_table.scale(1, 7)
+
+        # changed cell is of format (
+        #   (
+        #       (('row', 'S15'), ('column', 'S10')), 'row', 'plus'
+        #   ), 7.009999999999547
+        # )
+        def changed_cell_to_position(changed_cell):
+            return (
+                strategies.index(changed_cell[0][0][0][1])+1,
+                strategies.index(changed_cell[0][0][1][1])+1
+            )
+        changed_cells_positions = [changed_cell_to_position(cell) for cell in changed_cells]
+        for (row, col) in changed_cells_positions:
+            the_table[row, col].set_facecolor('#d2905d')
+
 
         def letter_to_position(letter):
             return strategies.index(letter) + 1
@@ -639,13 +701,41 @@ class NashEqFinder(object):
                 letter_to_position(nash_equilibria[eq][1][1])
                 ].set_facecolor('#5dbcd2')
 
+        
+
         for (row, col), cell in the_table.get_celld().items():
             cell.visible_edges = ''
             if col != 0 and row != 0:
                 cell.visible_edges = 'closed'
 
-        mpl.savefig(method + '.png', dpi=300)
+        nasheq_positions = []
+        for eq in range(len(nash_equilibria)):
+            nasheq_positions.append(
+                (letter_to_position(nash_equilibria[eq][0][1]), \
+                letter_to_position(nash_equilibria[eq][1][1]))
+            )
+
+        the_table.auto_set_font_size(False)
+        for row in range(SIZE+1):
+            for col in range(SIZE+1):
+                if (row, col) not in nasheq_positions and (row, col) not in changed_cells_positions:
+                    the_table[row, col].set_fontsize(3.5)
+                else:
+                    the_table[row, col].set_fontsize(1.4)
+        # for cell in the_table._cells:
+        #     if the_table._cells[cell].xy not in nasheq_positions:
+        #         text = the_table._cells[cell].get_text()
+        #         text.set_fontsize(3.5)
+
+        mpl.savefig(method + '.png', dpi=1000)
         mpl.show()
+        # for eq in range(len(nash_equilibria)):
+        #     fontsize = the_table[
+        #         letter_to_position(nash_equilibria[eq][0][1]), 
+        #         letter_to_position(nash_equilibria[eq][1][1])
+        #         ].get_fontsize()
+        #     print("Table fontsize", fontsize)
+        #     exit()
 
         
 
@@ -705,7 +795,7 @@ class NashEqFinder(object):
 
     
     # Elie
-    def validate_2c(self, nasheq_cells, method):
+    def validate_2c(self, nasheq_cells, method, iteration):
         # Validation: needs removal of hard coded methods
         print(f"\n Validation for method {method}\n")
 
@@ -730,6 +820,18 @@ class NashEqFinder(object):
 
         print('New payoff matrix for', method, self.game.payoff_matrix)
 
+        # Get the cells that changed
+        changed_cells = []
+        for var_name, var_primal in self.current_primals.items():
+            if var_primal != 0:
+                changed_cells.append((string_to_index(var_name), var_primal))
+
+        # Write changed cells into a file named with uuid
+        uuid = str(uuid4())
+        with open(f"{method}_{iteration}_changed_cells.txt", "w") as f:
+            for cell in changed_cells:
+                f.write(str(cell) + "\n")
+
         
         # Define an instance of the NashEqFinder
         NashEqFinderInst = NashEqFinder(self.game, stdout_msgs = True)
@@ -753,7 +855,7 @@ class NashEqFinder(object):
                     print(var_name, "=", var_primal)
 
         print('self.game.players_strategies', self.game.players_strategies)
-        self.show_matrix_2c(original_payoff_matrix, self.game.payoff_matrix, Nash_equilibria, self.game.players_strategies['row'], method)
+        self.show_matrix_2c(original_payoff_matrix, self.game.payoff_matrix, Nash_equilibria, self.game.players_strategies['row'], method, changed_cells)
         print(f"DONE Validation of {method}")
 
     # Elie
@@ -854,7 +956,9 @@ class NashEqFinder(object):
                         (self.game.payoff_matrix[current_cell][player] \
                         + model.variables[current_index+'_'+player+'_plus'] \
                         - model.variables[current_index+'_'+player+'_minus']
-                        ), lb=0)
+                        )
+                        -
+                        epsilon, lb=0)
                 constraints.append(c)
             print("ADDED columns loop")
         
@@ -905,10 +1009,12 @@ class NashEqFinder(object):
 
         original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
         print("NONONO")
-        self.validate_2c(nasheq_cells, method=f'Original Model with new equilibria={nasheq_cells} precluded')
+        self.validate_2c(nasheq_cells, method=f'Original Model with new equilibria={nasheq_cells} precluded', iteration="NONE")
         self.game.payoff_matrix = original_payoff_matrix
 
         print('Original payoff matrix', self.game.payoff_matrix)
+
+        # exit()
 
         # return self.optModel, self.game
 
@@ -1429,7 +1535,7 @@ class NashEqFinder(object):
             self.current_primals[var_name] = var.primal
 
         # For iteration = 1 to 10
-        for iteration in range(0):
+        for iteration in range(10):
 
             
 
@@ -1483,22 +1589,27 @@ class NashEqFinder(object):
             print('after model', model)
   
 
-            payoff_matrix = {}
-            payoff_matrix[(('row','C'),('column','C'))] = {'row':-1,'column':-1}
-            payoff_matrix[(('row','C'),('column','D'))] = {'row':-4,'column':0}
-            payoff_matrix[(('row','D'),('column','C'))] = {'row':0,'column':-4}
-            payoff_matrix[(('row','D'),('column','D'))] = {'row':-3,'column':-3}
+            # before june 20
+            # payoff_matrix = {}
+            # payoff_matrix[(('row','C'),('column','C'))] = {'row':-1,'column':-1}
+            # payoff_matrix[(('row','C'),('column','D'))] = {'row':-4,'column':0}
+            # payoff_matrix[(('row','D'),('column','C'))] = {'row':0,'column':-4}
+            # payoff_matrix[(('row','D'),('column','D'))] = {'row':-3,'column':-3}
 
-            eps_list = []
-            for i in strategies:
-                for j in strategies:
-                    t1 = payoff_matrix[(('row', i),('column', j))]['row']
-                    t2 = payoff_matrix[(('row', i),('column', j))]['column']
-                    if t1 != 0:
-                        eps_list.append(abs(t1))
-                    if t2 != 0:
-                        eps_list.append(abs(t2))
-            epsilon = min(eps_list)
+            # eps_list = []
+            # for i in strategies:
+            #     for j in strategies:
+            #         t1 = payoff_matrix[(('row', i),('column', j))]['row']
+            #         t2 = payoff_matrix[(('row', i),('column', j))]['column']
+            #         if t1 != 0:
+            #             eps_list.append(abs(t1))
+            #         if t2 != 0:
+            #             eps_list.append(abs(t2))
+            # epsilon = min(eps_list)
+
+            # On june 20
+            epsilon = 1
+
             print('eps', epsilon)
             # exit
             # return
@@ -1599,7 +1710,7 @@ class NashEqFinder(object):
 
             
             original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-            self.validate_2c(nasheq_cells, method=f"New Method 2c iteration {iteration + 1}, epsilon={epsilon}, with new equilibria={nasheq_cells} precluded")
+            self.validate_2c(nasheq_cells, method=f"New Method 2c iteration {iteration + 1}, epsilon={epsilon}, with new equilibria={nasheq_cells} precluded", iteration=str(iteration))
             self.game.payoff_matrix = original_payoff_matrix
 
         
@@ -1607,7 +1718,10 @@ class NashEqFinder(object):
 
 
 # Elie
-def show_matrix(payoff_matrix, nash_equilibria, strategies, method):        
+def show_matrix(payoff_matrix, nash_equilibria, strategies, method):  
+    # Open and append to the file
+    with open(f"log.txt", "a") as f:
+        f.write(f"\n\nMethod: {method} || Nash Equilibria: {nash_equilibria} || Time: {datetime.datetime.now()}")
     fig, ax = mpl.subplots()
     fig.patch.set_visible(False)
     ax.axis('off')
@@ -1630,7 +1744,7 @@ def show_matrix(payoff_matrix, nash_equilibria, strategies, method):
 
 
     table = payoffs_to_table(payoff_matrix)
-    the_table = ax.table(colWidths=[.3,.3,.3],
+    the_table = ax.table(#colWidths=[0.3] * (SIZE + 1),
                         cellText=table[1], colLabels=table[0],
                         loc='center', bbox=[-0.05, 0, 1.1, 1.0],
                         rowLoc='center', colLoc='center', cellLoc='center')
@@ -1650,8 +1764,42 @@ def show_matrix(payoff_matrix, nash_equilibria, strategies, method):
         if col != 0 and row != 0:
             cell.visible_edges = 'closed'
 
-    mpl.savefig(method + '.png', dpi = 300)
+    nasheq_positions = []
+    for eq in range(len(nash_equilibria)):
+        nasheq_positions.append(
+            (letter_to_position(nash_equilibria[eq][0][1]), \
+            letter_to_position(nash_equilibria[eq][1][1]))
+        )
+
+
+    the_table.auto_set_font_size(False)
+    # the_table.set_fontsize(3.5)
+    for row in range(SIZE+1):
+        for col in range(SIZE+1):
+            if (row, col) not in nasheq_positions:
+                the_table[row, col].set_fontsize(3.5)
+            else:
+                the_table[row, col].set_fontsize(1.4)
+
+    # # for (row, col), cell in the_table.get_celld().items():
+    # #     if (row, col) not in nasheq_positions:
+    # for cell in the_table._cells:
+    #     # print("cell", cell)
+    #     # print("the_table._cells[cell]", the_table._cells[cell])
+    #     # if the_table._cells[cell].facecolor != '#5dbcd2':
+    #     if the_table._cells[cell].xy not in nasheq_positions:
+    #         text = the_table._cells[cell].get_text()
+    #         text.set_fontsize(3.5)
+
+    mpl.savefig(method + '.png', dpi = 1000)
     mpl.show()
+    # for eq in range(len(nash_equilibria)):
+    #         fontsize = the_table[
+    #             letter_to_position(nash_equilibria[eq][0][1]), 
+    #             letter_to_position(nash_equilibria[eq][1][1])
+    #             ].get_fontsize()
+    #         print("Table fontsize", fontsize)
+    #         exit()
 
 #--------- Sample implementation ------
 if __name__ == "__main__":
@@ -1660,33 +1808,35 @@ if __name__ == "__main__":
     print ("\n\n\n\n\n\n\n\n\n\n")
     
     #---------------------------------- 
-    print ("\n-- Prisoner's Dilemma ---")
-    # Pure strategy Nash eq = (D,D)
+    # print ("\n-- Prisoner's Dilemma ---")
+    # # Pure strategy Nash eq = (D,D)
     
-    game_name = "Prisoner's Dilemma"
-    numberOfPlayers = 2
-    players_names = ['row','column']
+    # game_name = "Prisoner's Dilemma"
+    # numberOfPlayers = 2
+    # players_names = ['row','column']
     
-    players_strategies = {}
-    players_strategies['row'] = ['C','D']
-    players_strategies['column'] = ['C','D']
+    # players_strategies = {}
+    # players_strategies['row'] = ['C','D']
+    # players_strategies['column'] = ['C','D']
     
-    payoff_matrix = {}
-    payoff_matrix[(('row','C'),('column','C'))] = {'row':-1,'column':-1}
-    payoff_matrix[(('row','C'),('column','D'))] = {'row':-4,'column':0}
-    payoff_matrix[(('row','D'),('column','C'))] = {'row':0,'column':-4}
-    payoff_matrix[(('row','D'),('column','D'))] = {'row':-3,'column':-3}
+    # payoff_matrix = {}
+    # payoff_matrix[(('row','C'),('column','C'))] = {'row':-1,'column':-1}
+    # payoff_matrix[(('row','C'),('column','D'))] = {'row':-4,'column':0}
+    # payoff_matrix[(('row','D'),('column','C'))] = {'row':0,'column':-4}
+    # payoff_matrix[(('row','D'),('column','D'))] = {'row':-3,'column':-3}
     
-    # Define an instance of the game
-    PD = game(game_name, players_names, players_strategies, payoff_matrix)
+    # # Define an instance of the game
+    # PD = game(game_name, players_names, players_strategies, payoff_matrix)
     
-    # Define an instance of the NashEqFinder
-    NashEqFinderInst = NashEqFinder(PD, stdout_msgs = True)
-    # [Nash_equilibria,exit_flag] = NashEqFinderInst.run()
-    # [Nash_equilibria, exit_flag, game_payoff_matrix] = NashEqFinderInst.optlangRun()
-    # show_matrix(game_payoff_matrix, Nash_equilibria, players_strategies['row'], "Original Game called by optlangFindPure")       
+    # # Define an instance of the NashEqFinder
+    # NashEqFinderInst = NashEqFinder(PD, stdout_msgs = True)
+    # # [Nash_equilibria,exit_flag] = NashEqFinderInst.run()
+    # # [Nash_equilibria, exit_flag, game_payoff_matrix] = NashEqFinderInst.optlangRun()
+    # # show_matrix(game_payoff_matrix, Nash_equilibria, players_strategies['row'], "Original Game called by optlangFindPure")       
 
-    NashEqFinderInst.newEquilibria(nasheq_cells=[(('row','C'), ('column','D'))], strategies=['C', 'D'])
+    # NashEqFinderInst.newEquilibria(nasheq_cells=[(('row','C'), ('column','D'))], strategies=['C', 'D'])
+
+
 
     # # Validation:
     # payoff_matrix = {}
@@ -1707,6 +1857,90 @@ if __name__ == "__main__":
     
     # print ('exit_flag = ',exit_flag)
     # print ('Nash_equilibria = ',Nash_equilibria )
+
+
+    # ----------------------------------
+    
+    # create a SIZE strategies names S1, S2, S3, ..., S100
+    import random
+    game_name = f"{SIZE} strategies"
+    players_names = ['row','column']
+    
+    players_strategies = {}
+    strategies = ['S' + str(i) for i in range(1,SIZE+1)]
+    players_strategies['row'] = strategies
+    players_strategies['column'] = strategies
+    payoff_matrix = {}
+    # pupulate the payoff matrix with random payoffs upper triangle
+    for i in range(1,SIZE+1):
+        for j in range(i,SIZE+1):
+            payoff_matrix[('row', f"S{i}"), ('column', f"S{j}")] = \
+                {'row': random.randint(-15,0), 'column': random.randint(-15,0)}
+        
+    # copy into the lower triangle
+    for i in range(1,SIZE+1):
+        for j in range(i,SIZE+1):
+            payoff_matrix[('row', f"S{j}"), ('column', f"S{i}")] = \
+                payoff_matrix[('row', f"S{i}"), ('column', f"S{j}")] 
+
+    # write the payoff matrix to a file
+    def write_matrix():
+        print("Writing matrix to file")
+        with open(f"payoff_matrix_{SIZE}.txt", "w") as f:
+            for i in range(1,SIZE+1):
+                for j in range(1,SIZE+1):
+                    f.write(f"""{payoff_matrix[('row', f"S{i}"), ('column', f"S{j}")]['row']} """)
+                    f.write(f"""{payoff_matrix[('row', f"S{i}"), ('column', f"S{j}")]['column']} """)
+                f.write("\n")
+
+    # read the payoff matrix from the file
+    def read_matrix():
+        print("Reading the payoff matrix from the file")
+        with open(f"payoff_matrix_{SIZE}.txt", "r") as f:
+            lines = f.readlines()
+            print(len(lines))
+            print(len(lines[0].split()))
+            for i in range(SIZE):
+                for j in range(SIZE):
+                    payoff_matrix[('row', f"S{i+1}"), ('column', f"S{j+1}")] = \
+                        {'row': int(lines[i].split()[2*j]), 'column': int(lines[i].split()[2*j+1])}
+
+    # write_matrix()
+    read_matrix()
+
+
+
+    # # read the payoff matrix from a file
+    # with open(f"payoff_matrix_{SIZE}.txt", "r") as f:
+    #     lines = f.readlines()
+    #     for i in range(1,SIZE+1):
+    #         for j in range(1,SIZE+1):
+    #             payoff_matrix[('row', f"S{i}"), ('column', f"S{j}")] = \
+    #                 {'row': int(lines[i-1][j-1]), 'column': int(lines[i-1][j-1])}
+    
+    # Define an instance of the game
+    PD = game(game_name, players_names, players_strategies, payoff_matrix)
+
+    # Define an instance of the NashEqFinder
+    NashEqFinderInst = NashEqFinder(PD, stdout_msgs = True)
+    [Nash_equilibria,exit_flag, game_payoff_matrix] = NashEqFinderInst.optlangRun()
+    [Nash_equilibria_, exit_flag_] = NashEqFinderInst.run()
+    show_matrix(game_payoff_matrix, Nash_equilibria, players_strategies['row'], "Original Game called by optlangFindPure")
+    show_matrix(payoff_matrix, Nash_equilibria_, players_strategies['row'], "Original Game called by FindPure")
+    print("Nash_equilibria optlangFindPure = ", Nash_equilibria)
+    print("Nash_equilibria FindPure        = ", Nash_equilibria_)
+    # order the equilibria
+    Nash_equilibria.sort()
+    Nash_equilibria_.sort()
+    print(Nash_equilibria_==Nash_equilibria)
+    # exit()
+
+    NashEqFinderInst.newEquilibria(nasheq_cells=[(('row','S15'), ('column','S10'))], strategies=strategies)
+    # NashEqFinderInst.newEquilibria(nasheq_cells=[(('row','S5'), ('column','S3'))], strategies=strategies)
+
+
+
+    
     
     # #---------------------------------- 
     # print ("\n-- Game of pure coordination ---")
