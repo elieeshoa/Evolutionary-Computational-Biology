@@ -52,7 +52,7 @@ import matplotlib.pyplot as mpl
 # TempfileManager.tempdir = pyomo_tmp_dir
 
 
-SIZE = 20
+SIZE = 2
 
 
 
@@ -626,26 +626,27 @@ class NashEqFinder(object):
                     the_table[row, col].set_fontsize(1.4)
 
         # for cell in the_table._cells:
-        #     if the_table._cells[cell].xy not in nasheq_positions:
-        #         text = the_table._cells[cell].get_text()
-        #         text.set_fontsize(3.5)
+            if the_table._cells[cell].xy not in nasheq_positions:
+                text = the_table._cells[cell].get_text()
+                text.set_fontsize(3.5)
 
-        # mpl.savefig(f'PNGs2/size = {len(strategies)}, {method}.png', dpi=1000)
-        # mpl.show()
-        # for eq in range(len(nash_equilibria)):
-        #     fontsize = the_table[
-        #         letter_to_position(nash_equilibria[eq][0][1]), 
-        #         letter_to_position(nash_equilibria[eq][1][1])
-        #         ].get_fontsize()
-        #     print("Table fontsize", fontsize)
-        #     exit()
+        mpl.savefig(f'PNGs3/size = {len(strategies)}, {method}.png', dpi=1000)
+        mpl.show()
+        for eq in range(len(nash_equilibria)):
+            fontsize = the_table[
+                letter_to_position(nash_equilibria[eq][0][1]), 
+                letter_to_position(nash_equilibria[eq][1][1])
+                ].get_fontsize()
+            print("Table fontsize", fontsize)
+            exit()
 
 
     # Elie
     def show_matrix_2c(self, original_payoff_matrix, payoff_matrix, nash_equilibria, strategies, method, changed_cells):  
         print(f"Time before writing to limited_show_matrix_2c.txt: {datetime.datetime.now()}")
-        with open(f"limited_show_matrix_2c.txt", "a") as f:
-            f.write(f"\n\nSize = {len(strategies)}\n Method: {method} \nnash_equilibria: {nash_equilibria} \nchanged_cells: {changed_cells} \nTime: {datetime.datetime.now()}")
+        # commented it out on 10/20/2022
+        # with open(f"limited_show_matrix_2c.txt", "a") as f:
+        #     f.write(f"\n\nSize = {len(strategies)}\n Method: {method} \nnash_equilibria: {nash_equilibria} \nchanged_cells: {changed_cells} \nTime: {datetime.datetime.now()}")
         fig, ax = mpl.subplots()
         fig.patch.set_visible(False)
         ax.axis('off')
@@ -743,10 +744,39 @@ class NashEqFinder(object):
         #         # else:
         #         #     the_table[row, col].set_fontsize(1.4)
 
-        # print(f"Time before saving the PNG: {datetime.datetime.now()}")
-        # print(f"saving the PNG file for size {len(strategies)}")
-        # mpl.savefig(f'PNGs2/size = {len(strategies)}, {method}.png', dpi=1000)
-        # mpl.show()
+
+        size = len(strategies)
+        the_table.auto_set_font_size(False)
+        if size == 2:
+            for row in range(size+1):
+                for col in range(size+1):
+                    if (row, col) not in nasheq_positions:
+                        the_table[row, col].set_fontsize(14)
+                    else:
+                        the_table[row, col].set_fontsize(12)
+        elif size == 10:
+            for row in range(size+1):
+                for col in range(size+1):
+                    if (row, col) not in nasheq_positions:
+                        the_table[row, col].set_fontsize(4)
+                    else:
+                        the_table[row, col].set_fontsize(4)
+
+        print(f"Time before saving the PNG: {datetime.datetime.now()}")
+        print(f"saving the PNG file for size {len(strategies)}")
+        # set title based on iteration
+        # if iteration is in method.split(' ') find the word after it
+        # if iteration is not in method.split(' ') then just use the method
+
+        if 'iteration' in method.split(' '):
+            title = f"Iteration {method.split(' ')[method.split(' ').index('iteration')+1][:-1]}"
+        else:
+            title = 'Original Game'
+        
+        # set title with big font
+        ax.set_title(f"Resulting Matrix for {title}", fontsize=20)
+        mpl.savefig(f'PNGs3/size = {len(strategies)}, {method}.png', dpi=1000)
+        mpl.show()
 
 
         
@@ -898,7 +928,7 @@ class NashEqFinder(object):
 
         # Write changed cells into a file
         print(f"Time before writing the changed cells: {datetime.datetime.now()}")
-        with open(f"results3/size = {size}, {method}_{iteration}_results.txt", "w") as f:
+        with open(f"results4/size = {size}, {method}_{iteration}_results.txt", "w") as f:
             f.write("Changed cells:\n")
             for cell in changed_cells:
                 f.write(str(cell) + "\n")
@@ -906,23 +936,27 @@ class NashEqFinder(object):
         
         # Define an instance of the NashEqFinder
         print(f"Time before checking that the the desired cells are Nash Equilibria: {datetime.datetime.now()}")
-        for cell in nasheq_cells:
-            # cell is of format [(('row',f'S{i}'), ('column',f'S{j}'))]
-            # check that the first entry is greater than all first entries that are in the same column
-            # check that the second entry is greater than all second entries that are in the same row
-            # if both are true, then the cell is a Nash Equilibrium
-            # for all payoff_matrix cells that start with ('row',f'S{i}'), check that they are greater than cell[0][1]
-            row_values = [self.game.payoff_matrix[('row', f"S{i}"), cell[1]]['row'] <= self.game.payoff_matrix[cell]['row'] for i in range(1, size+1) if ('row', f"S{i}") != cell[0]]
-            column_values = [self.game.payoff_matrix[cell[0], ('column', f"S{i}")]['column'] <= self.game.payoff_matrix[cell]['column'] for i in range(1, size+1) if ('column', f"S{i}") != cell[1]]
-            if all(row_values) and all(column_values):
-                print(f"Success: cell {cell} is a Nash Equilibrium")
-            else:
-                print(f"Failure: cell {cell} is not a Nash Equilibrium")
+        
+        # 10/20/2022
+        # for cell in nasheq_cells:
+        #     # cell is of format [(('row',f'S{i}'), ('column',f'S{j}'))]
+        #     # check that the first entry is greater than all first entries that are in the same column
+        #     # check that the second entry is greater than all second entries that are in the same row
+        #     # if both are true, then the cell is a Nash Equilibrium
+        #     # for all payoff_matrix cells that start with ('row',f'S{i}'), check that they are greater than cell[0][1]
+        #     row_values = [self.game.payoff_matrix[('row', f"S{i}"), cell[1]]['row'] <= self.game.payoff_matrix[cell]['row'] for i in range(1, size+1) if ('row', f"S{i}") != cell[0]]
+        #     column_values = [self.game.payoff_matrix[cell[0], ('column', f"S{i}")]['column'] <= self.game.payoff_matrix[cell]['column'] for i in range(1, size+1) if ('column', f"S{i}") != cell[1]]
+        #     if all(row_values) and all(column_values):
+        #         print(f"Success: cell {cell} is a Nash Equilibrium")
+        #     else:
+        #         print(f"Failure: cell {cell} is not a Nash Equilibrium")
                 
         # add to the file
-        print(f"Time before writing to results3: {datetime.datetime.now()}")
-        with open(f"results3/size = {size}, {method}_{iteration}_results.txt", "a") as f:
+        print(f"Time before writing to results4: {datetime.datetime.now()}")
+        with open(f"results4/size = {size}, {method}_{iteration}_results.txt", "a") as f:
             f.write(f"\n\nDesired nash_equilibria = {nasheq_cells}\n")
+
+        self.show_matrix_2c(original_payoff_matrix, self.game.payoff_matrix, nasheq_cells, self.game.players_strategies['row'], method, changed_cells)
   
         print(f"DONE Validation of {method}")
 
@@ -939,6 +973,7 @@ class NashEqFinder(object):
         return: a model with the solutions' final model, which contains the 
                 optimal value of the variables and more
         """   
+        
 
         # Adding new variables 
         model = optlang.Model(name=f'Original Model')
@@ -978,18 +1013,6 @@ class NashEqFinder(object):
                 current_cell = ((cell[0][0], strategy), (cell[1]))
                 current_index = strip_down(current_cell)
                 player = model.players[0]
-                # This old snippet does not preclude cells other than 
-                # `nasheq_cells` to be a Nash equilibrium
-                # c = optlang.Constraint(
-                #         self.game.payoff_matrix[cell][player] \
-                #         + model.variables[root_index+'_'+player+'_plus'] \
-                #         - model.variables[root_index+'_'+player+'_minus'] \
-                #         - 
-                #         (self.game.payoff_matrix[current_cell][player] \
-                #         + model.variables[current_index+'_'+player+'_plus'] \
-                #         - model.variables[current_index+'_'+player+'_minus']
-                #         ), lb=0)
-
                 # This new snippet precludes cells other than `nasheq_cells` 
                 # to be a Nash equilibrium
                 epsilon = 0.01
@@ -1030,40 +1053,10 @@ class NashEqFinder(object):
 
        
 
-        self.optModel = model 
-
-         # May 20
-        # Fix all a_opt that are not 0 or binary to be 0
-        # for var_name, var in self.optModel.variables.items():
-        #     if var_name == "row_C_column_D_row_plus":
-        #         c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
-        #         model.add(c) 
-        #     if var_name == "row_D_column_D_row_minus":
-        #         c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
-        #         model.add(c)
-        #     # if var_name not in self.current_binary_variables:
-        #     #     if var.primal != 0:
-        #     #         c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
-        #     #         model.add(c)   
+        self.optModel = model  
         start_time = datetime.datetime.now()
         self.optModel.optimize()
         end_time = datetime.datetime.now() 
-
-
-        # print('FINAL optlang model', model)
-
-        # Print the results on the screen 
-        # print("status:", self.optModel.status)
-        # print("objective value:", self.optModel.objective.value)
-        # print("----------")
-        # for var_name, var in self.optModel.variables.items():
-        #     print(var_name, "=", var.primal)
-
-        # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-
-        # self.validate(nasheq_cells, method=f'Original Model with new equilibria={nasheq_cells} precluded')
-
-        # self.game.payoff_matrix = original_payoff_matrix
 
         # Neccessary for validate_2c
         self.current_variables = copy.deepcopy(variables_names)
@@ -1075,502 +1068,8 @@ class NashEqFinder(object):
 
         original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
         # print("NONONO")
-        self.validate_2c(nasheq_cells, method=f'Original Model with new equilibria={nasheq_cells} precluded', iteration="NONE", time_spent=end_time-start_time, size=len(strategies))
+        self.validate_2c(nasheq_cells, method=f'First solution with new equilibria={nasheq_cells} precluded', iteration="NONE", time_spent=end_time-start_time, size=len(strategies))
         self.game.payoff_matrix = original_payoff_matrix
-
-        # print('Original payoff matrix', self.game.payoff_matrix)
-
-        # exit()
-
-        # return self.optModel, self.game
-
-
-    # # def method_2a()
-        # print("\n Fixing all nonzero alphas \n")
-        # # Fix all α's that were non-zero in the current solution at zero, so 
-        # # those payoffs are not part of the future solutions at all.
-        # fixing_all_nonzero_constraints = []
-        # nonzero_vars = []
-        # for var_name, var in self.optModel.variables.items():
-        #     if var.primal > 0:
-        #         nonzero_vars.append(var_name)
-        #         # Setting the variable to zero
-        #         c = optlang.Constraint(model.variables[var_name], lb=0, ub=0)
-        #         fixing_all_nonzero_constraints.append(c)
-        #         model.add(c) 
-
-        # print('fixing_all_nonzero_constraints', fixing_all_nonzero_constraints)
-        
-        # self.optModel = model        
-        # self.optModel.optimize()
-
-        # print('FINAL optlang model', model)
-
-        # # Print the results on the screen 
-        # print("status:", self.optModel.status)
-        # print("objective value:", self.optModel.objective.value)
-        # print("----------")
-        # for var_name, var in self.optModel.variables.items():
-        #     print(var_name, "=", var.primal)
-
-        # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-
-        # # Neccessary for validate_2c
-        # self.current_variables = copy.deepcopy(variables_names)
-        # self.current_primals = {}
-        # for var_name, var in self.optModel.variables.items():
-        #     print(var_name, "=", var.primal)
-        #     self.current_variables.append(var_name)
-        #     self.current_primals[var_name] = var.primal
-        # self.validate_2c(nasheq_cells, method="Method 1 — nonzero")
-        # self.game.payoff_matrix = original_payoff_matrix
-        
-        # # Extremely important step
-        # model.remove(fixing_all_nonzero_constraints)
-        # print('Original payoff matrix', self.game.payoff_matrix)
-
-        # # Method 2a
-        # print("\n Method 2a \n")
-        # # For each non-zero α whose optimal value is α^opt, add on of the 
-        # # following constraints:
-        # #                       α≤α^opt-ϵ  &  α≥ α^opt+ϵ
-        # # Where, ϵ is a parameter provided by the user. We should try both 
-        # # small (e.g., 0.01) and large (e.g., 0.5) values. For example, if 
-        # # α^opt=1, examine the following values for ϵ=[0.1,0.2,…,0.9]
-
-        # method_2a_constraints = []
-        # method_2a_variables_names = copy.deepcopy(variables_names)
-        # # print('[0.1 * x for x in range(1, 11)]', [0.1 * x for x in range(1, 11)])
-        # # for epsilon in [0.1 * x for x in range(1, 11)]:
-        # epsilon = 100
-
-        # # Old snippet before introducing self.current_primals
-        # # for var_name, var in self.optModel.variables.items():
-        # #     # Didn't work without it, which is weird
-        # #     if var.primal > 0:
-
-        # # After introducing self.current_primals
-        # for var_name, var_primal in self.current_primals.items():
-        #     # Didn't work without it, which is weird
-        #     if var_primal > 0:
-
-        #         a_opt = var_primal
-        #         a = model.variables[var_name]
-        #         # Add the constraints
-        #         # c1 = optlang.Constraint(a - a_opt - epsilon, lb=0)
-        #         c1 = optlang.Constraint(a_opt - a - epsilon, lb=0)
-        #         method_2a_constraints.append(c1)
-        #         model.add(c1)
-            
-        # model.objective = optlang.Objective(expression=sympy.Add(*sympy.symbols(method_2a_variables_names)), direction='min')
-        
-        # self.optModel = model        
-        # self.optModel.optimize()
-
-        # print('FINAL optlang model for method 2a', model)
-
-        # # Print the results on the screen 
-        # print("status:", self.optModel.status)
-        # print("objective value:", self.optModel.objective.value)
-        # print("----------")
-        # for var_name, var in self.optModel.variables.items():
-        #     print(var_name, "=", var.primal)
-
-        # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-
-        # # Neccessary for validate_2c
-        # self.current_variables = copy.deepcopy(variables_names)
-        # self.current_primals = {}
-        # for var_name, var in self.optModel.variables.items():
-        #     print(var_name, "=", var.primal)
-        #     self.current_variables.append(var_name)
-        #     self.current_primals[var_name] = var.primal
-        # self.validate_2c(nasheq_cells, method="new Method 2a with epsilon = " + str(epsilon) + f" with new equilibria={nasheq_cells} precluded")
-        # self.game.payoff_matrix = original_payoff_matrix
-        
-        # # Extremely important step
-        # model.remove(method_2a_constraints)
-        # print('Original payoff matrix', self.game.payoff_matrix)
-
-
-
-        # # Method 2b
-        # print("\n Preventing alphas from being their optimal value \n")
-        # # For each non-zero α whose optimal value is α^opt, add the following
-        # # constraints:
-        # #                       α≤α^opt-ϵ  &  α≥ α^opt+ϵ
-        # # Where, ϵ is a parameter provided by the user. We should try both 
-        # # small (e.g., 0.01) and large (e.g., 0.5) values. For example, if 
-        # # α^opt=1, examine the following values for ϵ=[0.1,0.2,…,0.9]
-
-        # preventing_opt_constraints = []
-        # preventing_variables_names = copy.deepcopy(variables_names)
-        # # for epsilon in [0.01, 0.5]:
-        # epsilon = 0.5
-        # for var_name, var in self.optModel.variables.items():
-        #     # Didn't work without it, which is weird
-        #     if var.primal > 0:
-        #         a_opt = var.primal
-        #         a = model.variables[var_name]
-        #         # Add the variable of the absolute difference
-        #         str_index = var_name + "_diff"
-        #         a_diff = optlang.Variable(str_index, lb=0, type='continuous', problem=model)
-        #         model.add(a_diff)
-        #         preventing_variables_names.append(str_index)
-
-
-        #         # a = 3
-        #         # a_opt = 5
-        #         # a_diff >= -2 
-        #         # a_diff >= 2
-
-        #         # if a_diff > eps then we want |a - a_opt| > eps
-        #         # meaning a - a_opt > eps
-        #         # and     a - a_opt > -eps
-        #         # and minimize a - a_opt (which we already are doing)
-
-        #         # Add the constraints
-        #         # # a_diff >= a - a_opt + epsilon
-        #         # c1 = optlang.Constraint(a_diff - a + a_opt, lb=0)
-        #         # # a_diff >= - (a - a_opt + epsilon)
-        #         # c2 = optlang.Constraint(a_diff + a - a_opt, lb=0)
-        #         # # a_diff >= epsilon
-        #         # c3 = optlang.Constraint(a_diff - epsilon, lb=0)
-
-        #         print('a_opt is', a_opt)
-        #         c1 = optlang.Constraint(a - a_opt - epsilon, lb=0)
-        #         # a_diff >= - (a - a_opt + epsilon)
-        #         c2 = optlang.Constraint(- epsilon - a + a_opt, lb=0)
-        #         # # a_diff >= epsilon
-        #         c3 = optlang.Constraint(a - 3 * epsilon, lb=0)
-
-        #         preventing_opt_constraints.append(c1)
-        #         preventing_opt_constraints.append(c2)
-        #         preventing_opt_constraints.append(c3)
-        #         model.add(c1)
-        #         model.add(c2)
-        #         model.add(c3)
-            
-        # model.objective = optlang.Objective(expression=sympy.Add(*sympy.symbols(preventing_variables_names)), direction='min')
-        
-        # print('preventing_opt_constraints', preventing_opt_constraints)
-        
-        # self.optModel = model        
-        # self.optModel.optimize()
-
-        # print('FINAL optlang model for prevention', model)
-
-        # # Print the results on the screen 
-        # print("status:", self.optModel.status)
-        # print("objective value:", self.optModel.objective.value)
-        # print("----------")
-        # for var_name, var in self.optModel.variables.items():
-        #     print(var_name, "=", var.primal)
-
-        # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-        # self.validate(nasheq_cells, method="Method 2b")
-        # self.game.payoff_matrix = original_payoff_matrix
-        
-        # # Extremely important step
-        # model.remove(preventing_opt_constraints)
-        # print('Original payoff matrix', self.game.payoff_matrix)
-
-
-
-
-        # Method 2c
-        # print("\n Using binary variables \n")
-        # # For each non-zero α whose optimal value is α^opt, add the following
-        # # constraints:
-        # #                      α≤α^opt-ϵ  &  α≥ α^opt+ϵ
-
-        # #                     α≤〖(1-y)(α〗^opt-ϵ)+y〖UB〗_α    
-        # #                     〖α≥y(α〗^opt+ϵ)+(1-y)LB_α 
-
-        # # Note that if y=0, the first constraint is reduced to α≤α^opt-ϵ and 
-        # # the second constraint is reduced to α≥〖LB〗_α. On the other hand, 
-        # # if y=1, the first constraint is reduced to α≤UB_α and the second 
-        # # constraint is reducd to 〖α≥α〗^opt+ϵ. Instead of LB_α and UB_α, 
-        # # you can use the big-M approach too, i.e., replaced them with -M and 
-        # # M, respectively. 
-
-        # binary_constraints = []
-        # binary_variables_names = copy.deepcopy(variables_names)
-
-        # epsilon = 0.01
-        # ub = 1000
-        # lb = -1000
-        # for var_name, var in self.optModel.variables.items():
-        #     # Didn't work without it, which is weird
-        #     if var.primal > 0:
-        #         a_opt = var.primal
-        #         a = model.variables[var_name]
-        #         # Add the binary variable
-        #         str_index = var_name + "_binary"
-        #         y = optlang.Variable(str_index, lb=0, type='binary', problem=model)
-        #         model.add(y)
-        #         binary_variables_names.append(str_index)
-
-        #         c1 = optlang.Constraint(
-        #                 (1 - y) * (a_opt - epsilon) + y * ub - a,
-        #                 lb = 0
-        #             )
-        #         c2 = optlang.Constraint(
-        #             a - y * (a_opt + epsilon) - (1 - y) * lb,
-        #             lb=0
-        #             )
-
-        #         binary_constraints.append(c1)
-        #         binary_constraints.append(c2)
-        #         model.add(c1)
-        #         model.add(c2)
-            
-        # model.objective = \
-        #     optlang.Objective(
-        #         expression=sympy.Add(*sympy.symbols(binary_variables_names)),
-        #         direction='min'
-        #     )
-        
-        # print('binary_opt_constraints', binary_constraints)
-        
-        # self.optModel = model        
-        # self.optModel.optimize()
-
-        # print('FINAL optlang model for binary — Method 2c precluded', model)
-
-        # # Print the results on the screen 
-        # print("status:", self.optModel.status)
-        # print("objective value:", self.optModel.objective.value)
-        # print("----------")
-        # for var_name, var in self.optModel.variables.items():
-        #     print(var_name, "=", var.primal)
-
-        # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-        # self.validate(nasheq_cells, method=f"Method 2c with new equilibria={nasheq_cells} precluded")
-        # self.game.payoff_matrix = original_payoff_matrix
-        
-        # # Extremely important step
-        # model.remove(binary_constraints)
-        # print('Original payoff matrix', self.game.payoff_matrix) 
-
-
-
-        # Old before May 19
-        # Iterative Method 2c
-        # print("\n Using binary variables \n")
-        # # For each non-zero α whose optimal value is α^opt, add the following
-        # # constraints:
-        # #                      α≤α^opt-ϵ  &  α≥ α^opt+ϵ
-
-        # #                     α≤〖(1-y)(α〗^opt-ϵ)+y〖UB〗_α    
-        # #                     〖α≥y(α〗^opt+ϵ)+(1-y)LB_α 
-
-        # # Note that if y=0, the first constraint is reduced to α≤α^opt-ϵ and 
-        # # the second constraint is reduced to α≥〖LB〗_α. On the other hand, 
-        # # if y=1, the first constraint is reduced to α≤UB_α and the second 
-        # # constraint is reducd to 〖α≥α〗^opt+ϵ. Instead of LB_α and UB_α, 
-        # # you can use the big-M approach too, i.e., replaced them with -M and 
-        # # M, respectively. 
-
-        
-        # # Adding new attributes to self
-        # self.current_variables = copy.deepcopy(variables_names)
-        # self.current_binary_variables = []
-        # self.current_binary_constraints = []
-        # self.current_primals = {}
-        # for var_name, var in self.optModel.variables.items():
-        #     print(var_name, "=", var.primal)
-        #     self.current_variables.append(var_name)
-        #     self.current_primals[var_name] = var.primal
-
-        # # For iteration = 1 to 10
-        # for iteration in range(3):
-        #     print(f"\n\n\n----iteration {iteration + 1}----\n\n\n")
-        #     print(f"----removing binary variables and constrains to start anew----\n")
-
-        #     # Removing binary variables and their specific constraints from
-        #     # model
-        #     for binary_var in self.current_binary_variables:
-        #         model.remove(binary_var)
-        #     for binary_cons in self.current_binary_constraints:
-        #         model.remove(binary_cons)
-        #     # Removing binary variables and their specific constraints from
-        #     # self.current_variables and
-        #     # self.current_binary_variables and
-        #     # self.current_binary_constraints
-        #     # self.current_primals
-        #     self.current_variables = [e for e in self.current_variables if e not in self.current_binary_variables]  
-        #     for key_to_remove in self.current_binary_variables:
-        #         del self.current_primals[key_to_remove]
-        #     self.current_binary_variables = []
-        #     self.current_binary_constraints = []
-
-        #     # remove binary variable to start anew in next iteration
-
-        #     print(f'\nAfter removing in iteration {iteration + 1}, self.current_variables is:', self.current_variables)
-        #     print(f'\nAfter removing in iteration {iteration + 1}, self.current_binary_variables is:', self.current_binary_variables)
-        #     print(f'\nAfter removing in iteration {iteration + 1}, self.current_binary_constraints is:')
-        #     for con in self.current_binary_constraints:
-        #         print(con)
-        #     print(f'\nAfter removing in iteration {iteration + 1}, self.current_primals was:', self.current_primals)
-        #     # print("")
-        #     # for const in self.current_binary_constraints:
-        #     #     print(const)
-        #     # print('\nAnd self.current_binary_variables=', self.current_binary_variables)
-            
-        #     # Print the results on the screen 
-        #     print("after status:", self.optModel.status)
-        #     print("after objective value:", self.optModel.objective.value)
-        #     print("----------")
-        #     for var_name, var in self.optModel.variables.items():
-        #         print(var_name)
-        #         # try:
-        #         #     print(var_name, "=after", var.primal)
-        #         # except:
-        #         #     pass
-        #     print('after model', model)
-  
-
-        #     payoff_matrix = {}
-        #     payoff_matrix[(('row','C'),('column','C'))] = {'row':-1,'column':-1}
-        #     payoff_matrix[(('row','C'),('column','D'))] = {'row':-4,'column':0}
-        #     payoff_matrix[(('row','D'),('column','C'))] = {'row':0,'column':-4}
-        #     payoff_matrix[(('row','D'),('column','D'))] = {'row':-3,'column':-3}
-
-        #     eps_list = []
-        #     for i in strategies:
-        #         for j in strategies:
-        #             t1 = payoff_matrix[(('row', i),('column', j))]['row']
-        #             t2 = payoff_matrix[(('row', i),('column', j))]['column']
-        #             if t1 != 0:
-        #                 eps_list.append(abs(t1))
-        #             if t2 != 0:
-        #                 eps_list.append(abs(t2))
-        #     epsilon = min(eps_list)
-        #     print('eps', epsilon)
-        #     # exit
-        #     # return
-        #     # epsilon = 0.01
-        #     ub = 1000
-        #     lb = -1000
-        #     for var_name, var_primal in self.current_primals.items():
-        #         # Didn't work without it, which is weird
-        #         if var_primal > 0:
-        #             a_opt = var_primal
-        #             print(f'a_opt (which is variable {var_name}) for iteration {iteration+1} is', a_opt)
-        #             a = model.variables[var_name]
-        #             # Add the binary variable
-        #             str_index = var_name + "_binary"
-        #             y = optlang.Variable(str_index, lb=0, type='binary', problem=model)
-        #             model.add(y)
-        #             self.current_variables.append(str_index)
-        #             self.current_binary_variables.append(str_index)
-
-        #             c1 = optlang.Constraint(
-        #                     (1 - y) * (a_opt - epsilon) + y * ub - a,
-        #                     lb = 0
-        #                 )
-        #             c2 = optlang.Constraint(
-        #                 a - y * (a_opt + epsilon) - (1 - y) * lb,
-        #                 lb=0
-        #                 )
-
-        #             self.current_binary_constraints.append(c1)
-        #             self.current_binary_constraints.append(c2)
-        #             model.add(c1)
-        #             model.add(c2)
-
-        #     print('binary_variables_names', self.current_binary_variables)
-                
-        #     model.objective = \
-        #         optlang.Objective(
-        #             expression=sympy.Add(*sympy.symbols(self.current_variables)),
-        #             direction='min'
-        #         )
-            
-        #     print('self.current_binary_constraints:')
-        #     for con in self.current_binary_constraints:
-        #         print(con) 
-            
-        #     self.optModel = model        
-        #     self.optModel.optimize()
-        #     # if self.optModel.status == "optimal":
-        #     #     model.__getAttr('X')
-
-        #     print(f'\n\nFINAL optlang model for binary — Method 2c iteration {iteration+1} precluded', model)
-
-        #     # Print the results on the screen 
-        #     print("\nstatus:", self.optModel.status)
-        #     print("objective value:", self.optModel.objective.value)
-        #     print("----------")
-        #     for var_name, var in self.optModel.variables.items():
-        #         print(var_name, "=", var.primal)
-        #         self.current_primals[var_name] = var.primal
-
-            
-        #     original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-        #     self.validate_2c(nasheq_cells, method=f"Method 2c iteration {iteration + 1}, epsilon={epsilon}, with new equilibria={nasheq_cells} precluded")
-        #     self.game.payoff_matrix = original_payoff_matrix
-        #     # self.show_matrix(self.game.payoff_matrix, nash_equilibria=nasheq_cells, strategies=self.game.players_strategies['row'], method=f"Method 2c iteration {iteration + 1} with new equilibria={nasheq_cells} precluded")
-
-        #     # vars = []
-        #     # for var_name, var in self.optModel.variables.items():
-        #     #     vars.append(var_name)
-        #     # cons = []
-        #     # for con_name, con in self.optModel.constraints.items():
-        #     #     vars.append(con)
-
-        #     # remove binary variable to start anew in next iteration
-        #     # print(f'\nAfter iteration {iteration + 1}, current_variables was:', self.current_variables)
-        #     # print(f'\nAfter iteration {iteration + 1}, current_primals was:', self.current_primals)
-        #     # # print('\nBefore removing binary_variables_names, self.optModel.constraints.items() was:')
-        #     # print("")
-        #     # for const in self.current_binary_constraints:
-        #     #     print(const)
-        #     # print('\nAnd self.current_binary_variables=', self.current_binary_variables)
-        #     # for var_name, var in self.optModel.variables.items():
-        #     #     print(var_name)
-        #     #     print(var_name, "=after", var.primal)
-
-        #     # APPARNETLY removing variables/ constraints removes the .primal
-        #     # of all other variables!
-
-        #     # Removing binary variables and their specific constraints
-        #     # for binary_var in binary_variables_names:
-        #     #     model.remove(binary_var)
-        #     # for binary_cons in binary_constraints:
-        #     #     model.remove(binary_cons)
-
-        #     # new_vars = []
-        #     # for var_name, var in self.optModel.variables.items():
-        #     #     new_vars.append(var_name)
-        #     # print('\nAfter removing binary_variables_names, new_vars was:', new_vars)
-        #     # print(model)
-        #     # # Print the results on the screen 
-        #     # print("after status:", self.optModel.status)
-        #     # print("after objective value:", self.optModel.objective.value)
-        #     # print("----------")
-        #     # for var_name, var in self.optModel.variables.items():
-        #     #     # print(var_name)
-        #     #     try:
-        #     #         print(var_name, "=after", var.primal)
-        #     #     except:
-        #     #         pass
-        #     # for var_name, var in self.optModel.variables.items():
-        #     #     print(var_name)
-        #     #     # print(var_name, "=after", var.primal)
-
-        # # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
-        # # self.validate(nasheq_cells, method=f"Method 2c with new equilibria={nasheq_cells} precluded")
-        # # self.game.payoff_matrix = original_payoff_matrix
-        
-        # # # Extremely important step
-        # # model.remove(binary_constraints)
-        # # print('Original payoff matrix', self.game.payoff_matrix)
-
-
-
-
 
         # New on May 19
         # Iterative Method 2c
@@ -1594,6 +1093,8 @@ class NashEqFinder(object):
         self.current_variables = copy.deepcopy(variables_names)
         self.current_binary_variables = []
         self.current_binary_constraints = []
+        self.current_y_binary_variables = []
+        self.current_y_binary_variables_optlang = []
         self.current_primals = {}
         for var_name, var in self.optModel.variables.items():
             # print(var_name, "=", var.primal)
@@ -1602,122 +1103,178 @@ class NashEqFinder(object):
 
         # For iteration = 1 to 10
         for iteration in range(5):
-
-            
-
+            # print the payoff matrix
+            # Elie on 1/27/2023
             print(f"\n\n\n----iteration {iteration + 1}----\n\n\n")
             print(f"Time before starting iteration: {datetime.datetime.now()}")
             # print(f"----removing binary variables and constrains to start anew----\n")
-
-            # Removing binary variables and their specific constraints from
-            # model
-            # May 20
-            # for binary_var in self.current_binary_variables:
-            #     model.remove(binary_var)
-            # for binary_cons in self.current_binary_constraints:
-            #     model.remove(binary_cons)
-            # Removing binary variables and their specific constraints from
-            # self.current_variables and
-            # self.current_binary_variables and
-            # self.current_binary_constraints
-            # self.current_primals
-            self.current_variables = [e for e in self.current_variables if e not in self.current_binary_variables]  
+            self.current_variables = [e for e in self.current_variables if e not in (self.current_binary_variables + self.current_y_binary_variables)]
+            print("self.current_variables for iteration", iteration+1, ":", self.current_variables)
             for key_to_remove in self.current_binary_variables:
                 del self.current_primals[key_to_remove]
-            # May 20
-            # self.current_binary_variables = []
-            # self.current_binary_constraints = []
-
-            # remove binary variable to start anew in next iteration
-
-            # print(f'\nAfter removing in iteration {iteration + 1}, self.current_variables is:', self.current_variables)
-            # print(f'\nAfter removing in iteration {iteration + 1}, self.current_binary_variables is:', self.current_binary_variables)
-            # print(f'\nAfter removing in iteration {iteration + 1}, self.current_binary_constraints is:')
-            # for con in self.current_binary_constraints:
-            #     print(con)
-            # print(f'\nAfter removing in iteration {iteration + 1}, self.current_primals was:', self.current_primals)
-            
-            # print("")
-            # for const in self.current_binary_constraints:
-            #     print(const)
-            # print('\nAnd self.current_binary_variables=', self.current_binary_variables)
-            
-            # Print the results on the screen 
-            # print(f"after iteration {iteration} status:", self.optModel.status)
-            # print(f"after iteration {iteration} objective value:", self.optModel.objective.value)
-            # print("----------")
-            # print(f'\nAfter removing in iteration {iteration + 1}, self.optModel.variables are:')
-            # for var_name, var in self.optModel.variables.items():
-            #     # print(var_name)
-            #     # try:
-            #     #     # print(var_name, "=after", var.primal)
-            #     # except:
-            #     #     pass
-            # print('after model', model)
-  
-
-            # before june 20
-            # payoff_matrix = {}
-            # payoff_matrix[(('row','C'),('column','C'))] = {'row':-1,'column':-1}
-            # payoff_matrix[(('row','C'),('column','D'))] = {'row':-4,'column':0}
-            # payoff_matrix[(('row','D'),('column','C'))] = {'row':0,'column':-4}
-            # payoff_matrix[(('row','D'),('column','D'))] = {'row':-3,'column':-3}
-
-            # eps_list = []
-            # for i in strategies:
-            #     for j in strategies:
-            #         t1 = payoff_matrix[(('row', i),('column', j))]['row']
-            #         t2 = payoff_matrix[(('row', i),('column', j))]['column']
-            #         if t1 != 0:
-            #             eps_list.append(abs(t1))
-            #         if t2 != 0:
-            #             eps_list.append(abs(t2))
-            # epsilon = min(eps_list)
-
             # On june 20
             epsilon = 1
-
-            # print('eps', epsilon)
-            # exit
-            # return
-            # epsilon = 0.01
             ub = 1000
-            # May 20
-            # ub = 5
-            lb = -1000
-            
-
+            lb = -1000 
             print(f"Time before adding constraints: {datetime.datetime.now()}")
             # print(f"Binary variablessss before iteration {iteration+1}:", self.current_binary_variables)
             for var_name, var_primal in self.current_primals.items():
                 # Didn't work without it, which is weird
                 # Check if the variable optimal is positive and if it is not
                 # a binary variable
-                if var_primal > 0 and var_name not in self.current_binary_variables:
+                if var_primal > 0 and var_name not in (self.current_binary_variables + self.current_y_binary_variables):
                     a_opt = var_primal
                     # print(f'a_opt (which is variable {var_name}) for iteration {iteration+1} is', a_opt)
                     a = model.variables[var_name]
                     # Add the binary variable
                     # May 20
-                    str_index = var_name + "_binary" + f"_{iteration}"
-                    y = optlang.Variable(str_index, lb=0, type='binary', problem=model)
-                    model.add(y)
-                    # self.current_variables.append(str_index)
-                    self.current_binary_variables.append(str_index)
+                    # str_index = var_name + "_binary" + f"_{iteration}"
+                    # y = optlang.Variable(str_index, lb=0, type='binary', problem=model)
+                    # model.add(y)
+                    # # self.current_variables.append(str_index)
+                    # self.current_binary_variables.append(str_index)
 
-                    c1 = optlang.Constraint(
-                            (1 - y) * (a_opt - epsilon) + y * ub - a,
-                            lb = 0
-                        )
-                    c2 = optlang.Constraint(
-                            a - y * (a_opt + epsilon) - (1 - y) * lb,
+                    # c1 = optlang.Constraint(
+                    #         (1 - y) * (a_opt - epsilon) + y * ub - a,
+                    #         lb = 0
+                    #     )
+                    # c2 = optlang.Constraint(
+                    #         a - y * (a_opt + epsilon) - (1 - y) * lb,
+                    #         lb=0
+                    #     )
+
+                    # self.current_binary_constraints.append(c1)
+                    # self.current_binary_constraints.append(c2)
+                    # model.add(c1)
+                    # model.add(c2)
+
+                    str_index_y_a = var_name + "_binary" + f"_ya_{iteration}"
+                    str_index_y_a_prime = var_name + "_binary" + f"_ya_prime_{iteration}"
+                    y_a = optlang.Variable(str_index_y_a, lb=0, type='binary', problem=model)
+                    y_a_prime = optlang.Variable(str_index_y_a_prime, lb=0, type='binary', problem=model)
+                    model.add(y_a)
+                    model.add(y_a_prime)
+                    # self.current_variables.append(str_index)
+                    self.current_binary_variables.append(str_index_y_a)
+                    self.current_binary_variables.append(str_index_y_a_prime)
+
+                    # Add the binary y variables to the list of binary variables
+                    self.current_y_binary_variables.append(str_index_y_a)
+                    self.current_y_binary_variables.append(str_index_y_a_prime)
+
+                    self.current_y_binary_variables_optlang.append(y_a)
+                    self.current_y_binary_variables_optlang.append(y_a_prime)
+
+                    # I will introduce two non-linear constraints:
+                    # 1. a <= (1-y_a)[(1-y_a_prime)(a_opt-epsilon) + y_a_prime*ub] + y_a*a_opt
+                    # 2. a >= (1-y_a)[y_a_prime(a_opt+epsilon) + (1-y_a_prime)lb] + y_a*a_opt
+
+                    # Turn the constraints into linear constraints
+                    # introduce the third binary variable z_a, and the constraints:
+                    # z_a <= y_a
+                    # z_a <= y_a_prime
+                    # z_a >= y_a + y_a_prime - 1
+
+                    # Hence, constraints 1 becomes:
+                    # a <= [(1-y_a_prime)(a_opt-epsilon) + y_a_prime*ub] - [(y_a - z_a)(a_opt - epsilon) + z_a*ub] + y_a*a_opt
+                    # a >= [(y_a_prime)(a_opt+epsilon) + (1-y_a_prime)lb] - [z_a*(a_opt + epsilon) + (y_a - z_a)*lb] + y_a*a_opt
+
+                    # introduce the third binary variable z_a, and the constraints:
+                    str_index_z_a = var_name + "_binary" + f"_za_{iteration}"
+                    z_a = optlang.Variable(str_index_z_a, lb=0, type='binary', problem=model)
+                    model.add(z_a)
+                    self.current_binary_variables.append(str_index_z_a)
+
+                    # z_a <= y_a
+                    c_z_a_y_a = optlang.Constraint(
+                            y_a - z_a,
                             lb=0
                         )
+                    # z_a <= y_a_prime
+                    c_z_a_y_a_prime = optlang.Constraint(
+                            y_a_prime - z_a,
+                            lb=0
+                        )
+                    # z_a >= y_a + y_a_prime - 1
+                    c_z_a_y_a_y_a_prime = optlang.Constraint(
+                            z_a - y_a - y_a_prime + 1,
+                            lb=0
+                        )   
+
+                    # Hence, constraints 1 becomes:
+                    # a <= [(1-y_a_prime)(a_opt-epsilon) + y_a_prime*ub] - [(y_a - z_a)(a_opt - epsilon) + z_a*ub] + y_a*a_opt
+                    c1 = optlang.Constraint(
+                            (1 - y_a_prime) * (a_opt - epsilon) + y_a_prime * ub - (y_a - z_a) * (a_opt - epsilon) - z_a * ub + y_a * a_opt - a,
+                            lb = 0
+                        )
+                    # And constraint 2 becomes:
+                    # a >= [(y_a_prime)(a_opt+epsilon) + (1-y_a_prime)lb] - [z_a*(a_opt + epsilon) + (y_a - z_a)*lb] + y_a*a_opt
+                    c2 = optlang.Constraint(
+                            a - ((y_a_prime) * (a_opt + epsilon) + (1 - y_a_prime) * lb - z_a * (a_opt + epsilon) - (y_a - z_a) * lb + y_a * a_opt),
+                            lb=0
+                        )
+                    # y_a_prime <= 1 - y_a
+                    c3 = optlang.Constraint(
+                            1 - y_a - y_a_prime,
+                            lb=0
+                        )
+                    
+
+                    
 
                     self.current_binary_constraints.append(c1)
                     self.current_binary_constraints.append(c2)
+                    self.current_binary_constraints.append(c3)
+                    # self.current_binary_constraints.append(c4)
+                    self.current_binary_constraints.append(c_z_a_y_a)
+                    self.current_binary_constraints.append(c_z_a_y_a_prime)
+                    self.current_binary_constraints.append(c_z_a_y_a_y_a_prime)
+
                     model.add(c1)
                     model.add(c2)
+                    model.add(c3)
+                    # model.add(c4)
+                    model.add(c_z_a_y_a)
+                    model.add(c_z_a_y_a_prime)
+                    model.add(c_z_a_y_a_y_a_prime)
+
+
+            # let NZ_a be the cardinality of the set of non-zero variables
+            # \sum y_a <= NZ_a - 1
+            NZ_a = 0
+            for var_name, var_primal in self.current_primals.items():
+                if var_primal > 0 and var_name not in (self.current_binary_variables + self.current_y_binary_variables):
+                    NZ_a += 1
+            print()
+            # print("self.current_y_binary_variables", self.current_y_binary_variables)
+            # print("self.current_binary_variables", self.current_binary_variables)
+            # print("self.current_variables", self.current_variables)
+            # create sypmy expression of NZ_a - 1 - sum(self.current_y_binary_variables)
+            # expression = sympy.Add(NZ_a - 1, - 
+            #     sympy.Add(*sympy.symbols(self.current_y_binary_variables)))
+            # expression = NZ_a - 1 - sympy.Add(*sympy.symbols(self.current_y_binary_variables))
+
+            expression = NZ_a - 1
+
+            for var in self.current_y_binary_variables_optlang:
+                expression -= var
+
+            c4 = optlang.Constraint(
+                    expression,
+                    lb=0
+                )
+            print("c4", c4)
+            print()
+            model.add(c4)
+            self.current_binary_constraints.append(c4)
+            # print("current_binary_constraints")
+            # for c in self.current_binary_constraints:
+            #     print(c)
+            # sympy.Add(*sympy.symbols(self.current_variables))
+
+            # print(sympy.Add(*sympy.symbols(self.current_variables)))
+            # print(sympy.symbols(self.current_y_binary_variables))
+
 
             # print('binary_variables_names', self.current_binary_variables)
             print(f"Time before setting the objective: {datetime.datetime.now()}")
@@ -1731,6 +1288,9 @@ class NashEqFinder(object):
             print(f"Time before adding variables: {datetime.datetime.now()}")
             for var in self.current_binary_variables:
                 self.current_variables.append(var)
+
+            for var in self.current_y_binary_variables:
+                self.current_variables.append(var)
             # print(f"Binary variablessss after iteration {iteration+1}:", self.current_binary_variables)
 
             # print('self.current_binary_constraints:')
@@ -1740,45 +1300,22 @@ class NashEqFinder(object):
             self.optModel = model  
             # printing model before optimization in iteration + 1
             # print(f"Model before optimization in iteration {iteration + 1} is:", self.optModel)
+            # print the model before optimization
+            print(f"Model before optimization in iteration {iteration + 1} is:")
             print(f"Time before optimizing the model: {datetime.datetime.now()}")
             start_time = datetime.datetime.now()
-            self.optModel.optimize()
+            status = self.optModel.optimize()
+            print(f"Status of the optimization in iteration {iteration + 1} is:", status)
+
             end_time = datetime.datetime.now()
-            # if self.optModel.status == "optimal":
-            #     model.__getAttr('X')
-
-            # Subject To
-            #  8f7fe9e6-d7dc-11ec-a414-acde48001122: row_C_column_D_row_plus
-            #    - row_C_column_D_row_minus - row_D_column_D_row_plus
-            #    + row_D_column_D_row_minus >= 1.01
-            #  8f8011e6-d7dc-11ec-a414-acde48001122: - row_C_column_C_column_plus
-            #    + row_C_column_C_column_minus + row_C_column_D_column_plus
-            #    - row_C_column_D_column_minus >= -1
-            #  909a28aa-d7dc-11ec-a414-acde48001122: - row_C_column_D_row_plus >= -0.01
-            #  909a64fa-d7dc-11ec-a414-acde48001122: row_C_column_D_row_plus >= -1000
-            #  90cd8790-d7dc-11ec-a414-acde48001122: - row_D_column_D_row_minus
-            #    + 999.9900000095367 row_D_column_D_row_minus_binary
-            #    >= -0.00999999046325684
-            #  90cdb698-d7dc-11ec-a414-acde48001122: row_D_column_D_row_minus
-            #    - 1002.009999990463 row_D_column_D_row_minus_binary >= -1000
-            # Bounds
-            # Binaries
-            #  row_D_column_D_row_minus_binary
-            # End
-
-
-            # status: optimal
-            # objective value: 4.019999980926514
-
-            # print(f'\n\nFINAL optlang model for binary — Method 2c iteration {iteration+1} precluded', model)
-
-            # Print the results on the screen 
-            # print("\nstatus:", self.optModel.status)
-            # print("objective value:", self.optModel.objective.value)
-            # print("----------")
             print(f"Time before setting current_primals: {datetime.datetime.now()}")
+            print("self.current_primals for iteration", iteration + 1, "is:", self.current_primals)
+            print()
+            print("self.optModel.variables for iteration", iteration + 1, "is:")
             for var_name, var in self.optModel.variables.items():
-                # print(var_name, "=", var.primal)
+                print(var_name, "=", var)
+            for var_name, var in self.optModel.variables.items():
+                print(var_name, "=")
                 self.current_primals[var_name] = var.primal
 
             
@@ -1791,7 +1328,578 @@ class NashEqFinder(object):
             self.validate_2c(nasheq_cells, method=f"New Method 2c iteration {iteration + 1}, epsilon={epsilon}, with new equilibria={nasheq_cells} precluded", iteration=str(iteration), time_spent=end_time - start_time, size=len(strategies))
             self.game.payoff_matrix = original_payoff_matrix
 
+
+
+            # Elie on 1/20/2023
+            # print(f"\n\n\n----iteration {iteration + 1}----\n\n\n")
+            # print(f"Time before starting iteration: {datetime.datetime.now()}")
+            # # print(f"----removing binary variables and constrains to start anew----\n")
+
+            # # Removing binary variables and their specific constraints from
+            # # model
+            # # May 20
+            # # for binary_var in self.current_binary_variables:
+            # #     model.remove(binary_var)
+            # # for binary_cons in self.current_binary_constraints:
+            # #     model.remove(binary_cons)
+            # # Removing binary variables and their specific constraints from
+            # # self.current_variables and
+            # # self.current_binary_variables and
+            # # self.current_binary_constraints
+            # # self.current_primals
+            # self.current_variables = [e for e in self.current_variables if e not in self.current_binary_variables]  
+            # for key_to_remove in self.current_binary_variables:
+            #     del self.current_primals[key_to_remove]
+            # # May 20
+            # # self.current_binary_variables = []
+            # # self.current_binary_constraints = []
+
+            # # remove binary variable to start anew in next iteration
+
+            # # print(f'\nAfter removing in iteration {iteration + 1}, self.current_variables is:', self.current_variables)
+            # # print(f'\nAfter removing in iteration {iteration + 1}, self.current_binary_variables is:', self.current_binary_variables)
+            # # print(f'\nAfter removing in iteration {iteration + 1}, self.current_binary_constraints is:')
+            # # for con in self.current_binary_constraints:
+            # #     print(con)
+            # # print(f'\nAfter removing in iteration {iteration + 1}, self.current_primals was:', self.current_primals)
+            
+            # # print("")
+            # # for const in self.current_binary_constraints:
+            # #     print(const)
+            # # print('\nAnd self.current_binary_variables=', self.current_binary_variables)
+            
+            # # Print the results on the screen 
+            # # print(f"after iteration {iteration} status:", self.optModel.status)
+            # # print(f"after iteration {iteration} objective value:", self.optModel.objective.value)
+            # # print("----------")
+            # # print(f'\nAfter removing in iteration {iteration + 1}, self.optModel.variables are:')
+            # # for var_name, var in self.optModel.variables.items():
+            # #     # print(var_name)
+            # #     # try:
+            # #     #     # print(var_name, "=after", var.primal)
+            # #     # except:
+            # #     #     pass
+            # # print('after model', model)
+  
+
+            # # before june 20
+            # # payoff_matrix = {}
+            # # payoff_matrix[(('row','C'),('column','C'))] = {'row':-1,'column':-1}
+            # # payoff_matrix[(('row','C'),('column','D'))] = {'row':-4,'column':0}
+            # # payoff_matrix[(('row','D'),('column','C'))] = {'row':0,'column':-4}
+            # # payoff_matrix[(('row','D'),('column','D'))] = {'row':-3,'column':-3}
+
+            # # eps_list = []
+            # # for i in strategies:
+            # #     for j in strategies:
+            # #         t1 = payoff_matrix[(('row', i),('column', j))]['row']
+            # #         t2 = payoff_matrix[(('row', i),('column', j))]['column']
+            # #         if t1 != 0:
+            # #             eps_list.append(abs(t1))
+            # #         if t2 != 0:
+            # #             eps_list.append(abs(t2))
+            # # epsilon = min(eps_list)
+
+            # # On june 20
+            # epsilon = 1
+
+            # # print('eps', epsilon)
+            # # exit
+            # # return
+            # # epsilon = 0.01
+            # ub = 1000
+            # # May 20
+            # # ub = 5
+            # lb = -1000
+
+            # # initialize a set of y binary variables
+            # self.current_y_binary_variables = []
+            
+
+            # print(f"Time before adding constraints: {datetime.datetime.now()}")
+            # # print(f"Binary variablessss before iteration {iteration+1}:", self.current_binary_variables)
+            # for var_name, var_primal in self.current_primals.items():
+            #     # Didn't work without it, which is weird
+            #     # Check if the variable optimal is positive and if it is not
+            #     # a binary variable
+            #     if var_primal > 0 and var_name not in self.current_binary_variables:
+            #         a_opt = var_primal
+            #         # print(f'a_opt (which is variable {var_name}) for iteration {iteration+1} is', a_opt)
+            #         a = model.variables[var_name]
+            #         # Add the binary variable
+            #         # 1/20/2023
+            #         str_index_y_a = var_name + "_binary" + f"_ya_{iteration}"
+            #         str_index_y_a_prime = var_name + "_binary" + f"_ya_prime_{iteration}"
+            #         y_a = optlang.Variable(str_index_y_a, lb=0, type='binary', problem=model)
+            #         y_a_prime = optlang.Variable(str_index_y_a_prime, lb=0, type='binary', problem=model)
+            #         model.add(y_a)
+            #         model.add(y_a_prime)
+            #         # self.current_variables.append(str_index)
+            #         self.current_binary_variables.append(str_index_y_a)
+            #         self.current_binary_variables.append(str_index_y_a_prime)
+
+            #         # Add the binary y variables to the list of binary variables
+            #         self.current_y_binary_variables.append(str_index_y_a)
+            #         self.current_y_binary_variables.append(str_index_y_a_prime)
+
+            #         # I will introduce two non-linear constraints:
+            #         # 1. a <= (1-y_a)[(1-y_a_prime)(a_opt-epsilon) + y_a_prime*ub] + y_a*a_opt
+            #         # 2. a >= (1-y_a)[y_a_prime(a_opt+epsilon) + (1-y_a_prime)lb] + y_a*a_opt
+
+            #         # Turn the constraints into linear constraints
+            #         # introduce the third binary variable z_a, and the constraints:
+            #         # z_a <= y_a
+            #         # z_a <= y_a_prime
+            #         # z_a >= y_a + y_a_prime - 1
+
+            #         # Hence, constraints 1 becomes:
+            #         # a <= [(1-y_a_prime)(a_opt-epsilon) + y_a_prime*ub] - [(y_a - z_a)(a_opt - epsilon) + z_a*ub] + y_a*a_opt
+            #         # a >= [(y_a_prime)(a_opt+epsilon) + (1-y_a_prime)lb] - [z_a*(a_opt + epsilon) + (y_a - z_a)*lb] + y_a*a_opt
+
+            #         # introduce the third binary variable z_a, and the constraints:
+            #         str_index_z_a = var_name + "_binary" + f"_za_{iteration}"
+            #         z_a = optlang.Variable(str_index_z_a, lb=0, type='binary', problem=model)
+            #         model.add(z_a)
+            #         self.current_binary_variables.append(str_index_z_a)
+
+            #         # z_a <= y_a
+            #         c_z_a_y_a = optlang.Constraint(
+            #                 y_a - z_a,
+            #                 lb=0
+            #             )
+            #         # z_a <= y_a_prime
+            #         c_z_a_y_a_prime = optlang.Constraint(
+            #                 y_a_prime - z_a,
+            #                 lb=0
+            #             )
+            #         # z_a >= y_a + y_a_prime - 1
+            #         c_z_a_y_a_y_a_prime = optlang.Constraint(
+            #                 z_a - y_a - y_a_prime + 1,
+            #                 lb=0
+            #             )   
+
+            #         # Hence, constraints 1 becomes:
+            #         # a <= [(1-y_a_prime)(a_opt-epsilon) + y_a_prime*ub] - [(y_a - z_a)(a_opt - epsilon) + z_a*ub] + y_a*a_opt
+            #         c1 = optlang.Constraint(
+            #                 (1 - y_a_prime) * (a_opt - epsilon) + y_a_prime * ub - (y_a - z_a) * (a_opt - epsilon) - z_a * ub + y_a * a_opt - a,
+            #                 lb = 0
+            #             )
+            #         # And constraint 2 becomes:
+            #         # a >= [(y_a_prime)(a_opt+epsilon) + (1-y_a_prime)lb] - [z_a*(a_opt + epsilon) + (y_a - z_a)*lb] + y_a*a_opt
+            #         c2 = optlang.Constraint(
+            #                 a - ((y_a_prime) * (a_opt + epsilon) + (1 - y_a_prime) * lb - z_a * (a_opt + epsilon) - (y_a - z_a) * lb + y_a * a_opt),
+            #                 lb=0
+            #             )
+            #         # y_a_prime <= 1 - y_a
+            #         c3 = optlang.Constraint(
+            #                 1 - y_a - y_a_prime,
+            #                 lb=0
+            #             )
+                    
+
+                    
+
+            #         self.current_binary_constraints.append(c1)
+            #         self.current_binary_constraints.append(c2)
+            #         self.current_binary_constraints.append(c3)
+            #         # self.current_binary_constraints.append(c4)
+            #         self.current_binary_constraints.append(c_z_a_y_a)
+            #         self.current_binary_constraints.append(c_z_a_y_a_prime)
+            #         self.current_binary_constraints.append(c_z_a_y_a_y_a_prime)
+
+            #         model.add(c1)
+            #         model.add(c2)
+            #         model.add(c3)
+            #         # model.add(c4)
+            #         model.add(c_z_a_y_a)
+            #         model.add(c_z_a_y_a_prime)
+            #         model.add(c_z_a_y_a_y_a_prime)
+
+
+            # # let NZ_a be the cardinality of the set of non-zero variables
+            # # \sum y_a <= NZ_a - 1
+            # NZ_a = 0
+            # for var_name, var_primal in self.current_primals.items():
+            #     if var_primal > 0 and var_name not in self.current_binary_variables:
+            #         NZ_a += 1
+            # print()
+            # print("self.current_y_binary_variables", self.current_y_binary_variables)
+            # print("self.current_binary_variables", self.current_binary_variables)
+            # print("self.current_variables", self.current_variables)
+            # c4 = optlang.Constraint(
+            #         NZ_a - 1 - sympy.Add(*sympy.symbols(self.current_y_binary_variables)),
+            #         lb=0
+            #     )
+            # print("c4", c4)
+            # print()
+            # model.add(c4)
+            # self.current_binary_constraints.append(c4)
+
+            # # print('binary_variables_names', self.current_binary_variables)
+            # print(f"Time before setting the objective: {datetime.datetime.now()}")
+            # model.objective = \
+            #     optlang.Objective(
+            #         expression=sympy.Add(*sympy.symbols(self.current_variables)),
+            #         direction='min'
+            #     )
+
+            # # add every binary variable to current_variables
+            # print(f"Time before adding variables: {datetime.datetime.now()}")
+            # for var in self.current_y_binary_variables:
+            #     self.current_variables.append(var)
+            # # print(f"Binary variablessss after iteration {iteration+1}:", self.current_binary_variables)
+
+            # # print('self.current_binary_constraints:')
+            # # for con in self.current_binary_constraints:
+            # #     print(con) 
+            
+            # self.optModel = model  
+            # # printing model before optimization in iteration + 1
+            # # print(f"Model before optimization in iteration {iteration + 1} is:", self.optModel)
+            # print(f"Time before optimizing the model: {datetime.datetime.now()}")
+            # start_time = datetime.datetime.now()
+            # self.optModel.optimize()
+            # end_time = datetime.datetime.now()
+
+
+            # print()
+            # print('NZ_a', NZ_a)
+            # # print the y_a
+            # print('y_a', y_a.primal)
+            # print()
+
+            
+            # # if self.optModel.status == "optimal":
+            # #     model.__getAttr('X')
+            # # print(f'\n\nFINAL optlang model for binary — Method 2c iteration {iteration+1} precluded', model)
+            # # Print the results on the screen 
+            # # print("\nstatus:", self.optModel.status)
+            # # print("objective value:", self.optModel.objective.value)
+            # # print("----------")
+            # print(f"Time before setting current_primals: {datetime.datetime.now()}")
+            # for var_name, var in self.optModel.variables.items():
+            #     # print(var_name, "=", var.primal)
+            #     self.current_primals[var_name] = var.primal
+
+            
+            # with open(f"log2.txt", "a") as f:
+            #     f.write(f"\nsize = {len(strategies)}, 2c iteration {iteration} with desired nach equilibria: {nasheq_cells} || Time: {end_time - start_time}")
+
+
+            # # print the new payoff matrix
+            # # print(f"Time before printing the new payoff matrix: {datetime.datetime.now()}")
+            # print(f"New payoff matrix after iteration {iteration + 1} is:")
+            # for i in self.game.payoff_matrix:
+            #     print(i)
+            # print()
+            
+            # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
+            # print(f"Time before validating: {datetime.datetime.now()}")
+            # self.validate_2c(nasheq_cells, method=f"New Method 2c iteration {iteration + 1}, epsilon={epsilon}, with new equilibria={nasheq_cells} precluded", iteration=str(iteration), time_spent=end_time - start_time, size=len(strategies))
+            # self.game.payoff_matrix = original_payoff_matrix
+
+            
+            # before 1/20/2023
+            # print(f"\n\n\n----iteration {iteration + 1}----\n\n\n")
+            # print(f"Time before starting iteration: {datetime.datetime.now()}")
+            # # print(f"----removing binary variables and constrains to start anew----\n")
+
+            # # Removing binary variables and their specific constraints from
+            # # model
+            # # May 20
+            # # for binary_var in self.current_binary_variables:
+            # #     model.remove(binary_var)
+            # # for binary_cons in self.current_binary_constraints:
+            # #     model.remove(binary_cons)
+            # # Removing binary variables and their specific constraints from
+            # # self.current_variables and
+            # # self.current_binary_variables and
+            # # self.current_binary_constraints
+            # # self.current_primals
+            # self.current_variables = [e for e in self.current_variables if e not in self.current_binary_variables]  
+            # for key_to_remove in self.current_binary_variables:
+            #     del self.current_primals[key_to_remove]
+            # # May 20
+            # # self.current_binary_variables = []
+            # # self.current_binary_constraints = []
+
+            # # remove binary variable to start anew in next iteration
+
+            # # print(f'\nAfter removing in iteration {iteration + 1}, self.current_variables is:', self.current_variables)
+            # # print(f'\nAfter removing in iteration {iteration + 1}, self.current_binary_variables is:', self.current_binary_variables)
+            # # print(f'\nAfter removing in iteration {iteration + 1}, self.current_binary_constraints is:')
+            # # for con in self.current_binary_constraints:
+            # #     print(con)
+            # # print(f'\nAfter removing in iteration {iteration + 1}, self.current_primals was:', self.current_primals)
+            
+            # # print("")
+            # # for const in self.current_binary_constraints:
+            # #     print(const)
+            # # print('\nAnd self.current_binary_variables=', self.current_binary_variables)
+            
+            # # Print the results on the screen 
+            # # print(f"after iteration {iteration} status:", self.optModel.status)
+            # # print(f"after iteration {iteration} objective value:", self.optModel.objective.value)
+            # # print("----------")
+            # # print(f'\nAfter removing in iteration {iteration + 1}, self.optModel.variables are:')
+            # # for var_name, var in self.optModel.variables.items():
+            # #     # print(var_name)
+            # #     # try:
+            # #     #     # print(var_name, "=after", var.primal)
+            # #     # except:
+            # #     #     pass
+            # # print('after model', model)
+  
+
+            # # before june 20
+            # # payoff_matrix = {}
+            # # payoff_matrix[(('row','C'),('column','C'))] = {'row':-1,'column':-1}
+            # # payoff_matrix[(('row','C'),('column','D'))] = {'row':-4,'column':0}
+            # # payoff_matrix[(('row','D'),('column','C'))] = {'row':0,'column':-4}
+            # # payoff_matrix[(('row','D'),('column','D'))] = {'row':-3,'column':-3}
+
+            # # eps_list = []
+            # # for i in strategies:
+            # #     for j in strategies:
+            # #         t1 = payoff_matrix[(('row', i),('column', j))]['row']
+            # #         t2 = payoff_matrix[(('row', i),('column', j))]['column']
+            # #         if t1 != 0:
+            # #             eps_list.append(abs(t1))
+            # #         if t2 != 0:
+            # #             eps_list.append(abs(t2))
+            # # epsilon = min(eps_list)
+
+            # # On june 20
+            # epsilon = 1
+
+            # # print('eps', epsilon)
+            # # exit
+            # # return
+            # # epsilon = 0.01
+            # ub = 1000
+            # # May 20
+            # # ub = 5
+            # lb = -1000
+            
+
+            # print(f"Time before adding constraints: {datetime.datetime.now()}")
+            # # print(f"Binary variablessss before iteration {iteration+1}:", self.current_binary_variables)
+            # for var_name, var_primal in self.current_primals.items():
+            #     # Didn't work without it, which is weird
+            #     # Check if the variable optimal is positive and if it is not
+            #     # a binary variable
+            #     if var_primal > 0 and var_name not in self.current_binary_variables:
+            #         a_opt = var_primal
+            #         # print(f'a_opt (which is variable {var_name}) for iteration {iteration+1} is', a_opt)
+            #         a = model.variables[var_name]
+            #         # Add the binary variable
+            #         # May 20
+            #         str_index = var_name + "_binary" + f"_{iteration}"
+            #         y = optlang.Variable(str_index, lb=0, type='binary', problem=model)
+            #         model.add(y)
+            #         # self.current_variables.append(str_index)
+            #         self.current_binary_variables.append(str_index)
+
+            #         c1 = optlang.Constraint(
+            #                 (1 - y) * (a_opt - epsilon) + y * ub - a,
+            #                 lb = 0
+            #             )
+            #         c2 = optlang.Constraint(
+            #                 a - y * (a_opt + epsilon) - (1 - y) * lb,
+            #                 lb=0
+            #             )
+
+            #         self.current_binary_constraints.append(c1)
+            #         self.current_binary_constraints.append(c2)
+            #         model.add(c1)
+            #         model.add(c2)
+
+            # # print('binary_variables_names', self.current_binary_variables)
+            # print(f"Time before setting the objective: {datetime.datetime.now()}")
+            # model.objective = \
+            #     optlang.Objective(
+            #         expression=sympy.Add(*sympy.symbols(self.current_variables)),
+            #         direction='min'
+            #     )
+
+            # # add every binary variable to current_variables
+            # print(f"Time before adding variables: {datetime.datetime.now()}")
+            # for var in self.current_binary_variables:
+            #     self.current_variables.append(var)
+            # # print(f"Binary variablessss after iteration {iteration+1}:", self.current_binary_variables)
+
+            # # print('self.current_binary_constraints:')
+            # # for con in self.current_binary_constraints:
+            # #     print(con) 
+            
+            # self.optModel = model  
+            # # printing model before optimization in iteration + 1
+            # # print(f"Model before optimization in iteration {iteration + 1} is:", self.optModel)
+            # print(f"Time before optimizing the model: {datetime.datetime.now()}")
+            # start_time = datetime.datetime.now()
+            # self.optModel.optimize()
+            # end_time = datetime.datetime.now()
+            # # if self.optModel.status == "optimal":
+            # #     model.__getAttr('X')
+            # # print(f'\n\nFINAL optlang model for binary — Method 2c iteration {iteration+1} precluded', model)
+            # # Print the results on the screen 
+            # # print("\nstatus:", self.optModel.status)
+            # # print("objective value:", self.optModel.objective.value)
+            # # print("----------")
+            # print(f"Time before setting current_primals: {datetime.datetime.now()}")
+            # for var_name, var in self.optModel.variables.items():
+            #     # print(var_name, "=", var.primal)
+            #     self.current_primals[var_name] = var.primal
+
+            
+            # with open(f"log2.txt", "a") as f:
+            #     f.write(f"\nsize = {len(strategies)}, 2c iteration {iteration} with desired nach equilibria: {nasheq_cells} || Time: {end_time - start_time}")
+
+            
+            # original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
+            # print(f"Time before validating: {datetime.datetime.now()}")
+            # self.validate_2c(nasheq_cells, method=f"New Method 2c iteration {iteration + 1}, epsilon={epsilon}, with new equilibria={nasheq_cells} precluded", iteration=str(iteration), time_spent=end_time - start_time, size=len(strategies))
+            # self.game.payoff_matrix = original_payoff_matrix
+
         
+
+
+# Elie on 11/18/2022
+def show_matrix_original(original_payoff_matrix, payoff_matrix, nash_equilibria, strategies, method, changed_cells):  
+        print(f"Time before writing to limited_show_matrix_2c.txt: {datetime.datetime.now()}")
+        # commented it out on 10/20/2022
+        # with open(f"limited_show_matrix_2c.txt", "a") as f:
+        #     f.write(f"\n\nSize = {len(strategies)}\n Method: {method} \nnash_equilibria: {nash_equilibria} \nchanged_cells: {changed_cells} \nTime: {datetime.datetime.now()}")
+        fig, ax = mpl.subplots()
+        fig.patch.set_visible(False)
+        ax.axis('off')
+        ax.axis('tight')
+
+        def payoffs_to_table(payoff_matrix): 
+            col_text =  [''] + strategies
+            table_text = []
+            for i in strategies:
+                row = [i]
+                for j in strategies:
+                    og1 = original_payoff_matrix[(('row', i),('column', j))]['row']
+                    og2 = original_payoff_matrix[(('row', i),('column', j))]['column']
+                    new1 = payoff_matrix[(('row', i),('column', j))]['row']
+                    new2 = payoff_matrix[(('row', i),('column', j))]['column']
+                    def check_0(s):
+                        if s != '0.0':
+                            return f" + {s}"
+                        else:
+                            return ""
+
+                    def remove_zeroes(s):
+                        if s[-2:] == '.0':
+                            return s[:-2]
+                        else:
+                            return s
+
+                    row.append(
+                        # ("({:s} " + check_0(round(new1 - float(og1), 4)) + ", {:s}" + check_0(round(new2 - float(og2), 4)) + ")").format(str(round(float(og1), 4)), str(round(new1 - float(og1), 4)), str(round(float(og2), 4)), str(round(new2 - float(og2), 4)))
+                        f"({remove_zeroes(str(round(float(og1), 4)))}" + check_0(str(round(new1 - float(og1), 4))) + f", {remove_zeroes(str(round(float(og2), 4)))}" + check_0(str(round(new2 - float(og2), 4))) + ")"
+                        # ("{:s} + {:s}".format(str(round(og, 4)), str(round(new1 - og, 4))), \
+                        #  "{:s} + {:s}".format(str(round(og, 4)), str(round(new2 - og, 4))))
+                    )
+                table_text.append(row)
+                # print("dis row", row)
+
+            return col_text, table_text
+
+
+        print(f"Time before defining the table: {datetime.datetime.now()}")
+        table = payoffs_to_table(payoff_matrix)
+        the_table = ax.table(#colWidths=[0.3] * (SIZE + 1),
+                            cellText=table[1], colLabels=table[0],
+                            loc='center', bbox=[-0.05, 0, 1.1, 1.0],
+                            rowLoc='center', colLoc='center', cellLoc='center')
+        the_table.scale(1, 7)
+
+        # changed cell is of format (
+        #   (
+        #       (('row', 'S15'), ('column', 'S10')), 'row', 'plus'
+        #   ), 7.009999999999547
+        # )
+        def changed_cell_to_position(changed_cell):
+            return (
+                strategies.index(changed_cell[0][0][0][1])+1,
+                strategies.index(changed_cell[0][0][1][1])+1
+            )
+        print(f"Time before setting the cells colors: {datetime.datetime.now()}")
+        changed_cells_positions = [changed_cell_to_position(cell) for cell in changed_cells]
+        for (row, col) in changed_cells_positions:
+            the_table[row, col].set_facecolor('#d2905d')
+
+
+        def letter_to_position(letter):
+            return strategies.index(letter) + 1
+        
+        print(f"Time before setting the cells colors again: {datetime.datetime.now()}")
+        for eq in range(len(nash_equilibria)):
+            the_table[
+                letter_to_position(nash_equilibria[eq][0][1]), 
+                letter_to_position(nash_equilibria[eq][1][1])
+                ].set_facecolor('#5dbcd2')
+
+        
+        print(f"Time before closed grid edges: {datetime.datetime.now()}")
+        for (row, col), cell in the_table.get_celld().items():
+            cell.visible_edges = ''
+            if col != 0 and row != 0:
+                cell.visible_edges = 'closed'
+
+        nasheq_positions = []
+        print(f"Time before adding nasheq_positions: {datetime.datetime.now()}")
+        for eq in range(len(nash_equilibria)):
+            nasheq_positions.append(
+                (letter_to_position(nash_equilibria[eq][0][1]), \
+                letter_to_position(nash_equilibria[eq][1][1]))
+            )
+
+        # Old before July 6
+        # the_table.auto_set_font_size(False)
+        # for row in range(SIZE+1):
+        #     for col in range(SIZE+1):
+        #         # if (row, col) not in nasheq_positions and (row, col) not in changed_cells_positions:
+        #         #     the_table[row, col].set_fontsize(3.5)
+        #         # else:
+        #         #     the_table[row, col].set_fontsize(1.4)
+
+
+        size = len(strategies)
+        the_table.auto_set_font_size(False)
+        if size == 2:
+            for row in range(size+1):
+                for col in range(size+1):
+                    if (row, col) not in nasheq_positions:
+                        the_table[row, col].set_fontsize(14)
+                    else:
+                        the_table[row, col].set_fontsize(14)
+        elif size == 10:
+            for row in range(size+1):
+                for col in range(size+1):
+                    if (row, col) not in nasheq_positions:
+                        the_table[row, col].set_fontsize(4)
+                    else:
+                        the_table[row, col].set_fontsize(4)
+
+        print(f"Time before saving the PNG: {datetime.datetime.now()}")
+        print(f"saving the PNG file for size {len(strategies)}")
+        # set title based on iteration
+        # if iteration is in method.split(' ') find the word after it
+        # if iteration is not in method.split(' ') then just use the method
+
+        if 'iteration' in method.split(' '):
+            title = f"Iteration {method.split(' ')[method.split(' ').index('iteration')+1][:-1]}"
+        else:
+            title = 'Original Game'
+        
+        # set title with big font
+        ax.set_title(f"Resulting Matrix for {title}", fontsize=20)
+        mpl.savefig(f'PNGs3/size = {len(strategies)}, {method}.png', dpi=1000)
+        mpl.show()
 
 
 
@@ -1852,34 +1960,34 @@ def show_matrix(payoff_matrix, nash_equilibria, strategies, method):
         )
 
 
-    # the_table.auto_set_font_size(False)
-    # # the_table.set_fontsize(3.5)
-    # for row in range(SIZE+1):
-    #     for col in range(SIZE+1):
-    #         if (row, col) not in nasheq_positions:
-    #             the_table[row, col].set_fontsize(3.5)
-    #         else:
-    #             the_table[row, col].set_fontsize(1.4)
+    the_table.auto_set_font_size(False)
+    # the_table.set_fontsize(3.5)
+    for row in range(SIZE+1):
+        for col in range(SIZE+1):
+            if (row, col) not in nasheq_positions:
+                the_table[row, col].set_fontsize(3.5)
+            else:
+                the_table[row, col].set_fontsize(1.4)
 
-    # # for (row, col), cell in the_table.get_celld().items():
-    # #     if (row, col) not in nasheq_positions:
-    # for cell in the_table._cells:
-    #     # print("cell", cell)
-    #     # print("the_table._cells[cell]", the_table._cells[cell])
-    #     # if the_table._cells[cell].facecolor != '#5dbcd2':
-    #     if the_table._cells[cell].xy not in nasheq_positions:
-    #         text = the_table._cells[cell].get_text()
-    #         text.set_fontsize(3.5)
+    # for (row, col), cell in the_table.get_celld().items():
+    #     if (row, col) not in nasheq_positions:
+    for cell in the_table._cells:
+        # print("cell", cell)
+        # print("the_table._cells[cell]", the_table._cells[cell])
+        # if the_table._cells[cell].facecolor != '#5dbcd2':
+        if the_table._cells[cell].xy not in nasheq_positions:
+            text = the_table._cells[cell].get_text()
+            text.set_fontsize(3.5)
 
-    # mpl.savefig(f'PNGs2/size = {len(strategies)}, {method}.png', dpi = 1000)
-    # mpl.show()
-    # for eq in range(len(nash_equilibria)):
-    #         fontsize = the_table[
-    #             letter_to_position(nash_equilibria[eq][0][1]), 
-    #             letter_to_position(nash_equilibria[eq][1][1])
-    #             ].get_fontsize()
-    #         print("Table fontsize", fontsize)
-    #         exit()
+    mpl.savefig(f'PNGs3/size = {len(strategies)}, {method}.png', dpi = 1000)
+    mpl.show()
+    for eq in range(len(nash_equilibria)):
+            fontsize = the_table[
+                letter_to_position(nash_equilibria[eq][0][1]), 
+                letter_to_position(nash_equilibria[eq][1][1])
+                ].get_fontsize()
+            print("Table fontsize", fontsize)
+            exit()
 
 #--------- Sample implementation ------
 if __name__ == "__main__":
@@ -1911,11 +2019,55 @@ if __name__ == "__main__":
     
     # Define an instance of the NashEqFinder
     NashEqFinderInst = NashEqFinder(PD, stdout_msgs = True)
-    # [Nash_equilibria,exit_flag] = NashEqFinderInst.run()
-    # [Nash_equilibria, exit_flag, game_payoff_matrix] = NashEqFinderInst.optlangRun()
-    # show_matrix(game_payoff_matrix, Nash_equilibria, players_strategies['row'], "Original Game called by optlangFindPure")       
+    [Nash_equilibria,exit_flag] = NashEqFinderInst.run()
+    [Nash_equilibria, exit_flag, game_payoff_matrix] = NashEqFinderInst.optlangRun()
+    # (self, original_payoff_matrix, payoff_matrix, nash_equilibria, strategies, method, changed_cells)
+    show_matrix_original(game_payoff_matrix, game_payoff_matrix, Nash_equilibria, players_strategies['row'], "Original Payoff Matrix", [])       
 
-    NashEqFinderInst.newEquilibria(nasheq_cells=[(('row','C'), ('column','D'))], strategies=['C', 'D'])
+    NashEqFinderInst.newEquilibria(nasheq_cells=[(('row','C'), ('column','C'))], strategies=['C', 'D'])
+    
+    
+    # ----------------------------------
+    # print ("\n-- Game of size 10 ---")
+    # SIZE = 10
+    # game_name = f"{SIZE} strategies"
+    # players_names = ['row','column']
+    # players_strategies = {}
+    # strategies = ['S' + str(i) for i in range(1,SIZE+1)]
+    # players_strategies['row'] = strategies
+    # players_strategies['column'] = strategies
+    # payoff_matrix = {}
+    # def read_matrix():
+    #     print("Reading the payoff matrix from the file")
+    #     with open(f"random/payoff_matrix_{SIZE}.txt", "r") as f:
+    #         lines = f.readlines()
+    #         print(len(lines))
+    #         print(len(lines[0].split()))
+    #         for i in range(SIZE):
+    #             for j in range(SIZE):
+    #                 payoff_matrix[('row', f"S{i+1}"), ('column', f"S{j+1}")] = \
+    #                     {'row': int(lines[i].split()[2*j]), 'column': int(lines[i].split()[2*j+1])}
+
+    # # write_matrix()
+    # read_matrix()
+    # # Define an instance of the game
+    # PD = game(game_name, players_names, players_strategies, payoff_matrix)
+    # # Define an instance of the NashEqFinder
+    # NashEqFinderInst = NashEqFinder(PD, stdout_msgs = True)
+    # [Nash_equilibria,exit_flag, game_payoff_matrix] = NashEqFinderInst.optlangRun()
+    # [Nash_equilibria_, exit_flag_] = NashEqFinderInst.run()
+    # show_matrix(game_payoff_matrix, Nash_equilibria, players_strategies['row'], "Original Game called by optlangFindPure")
+    # show_matrix(payoff_matrix, Nash_equilibria_, players_strategies['row'], "Original Game called by FindPure")
+    # print("Nash_equilibria optlangFindPure = ", Nash_equilibria)
+    # print("Nash_equilibria FindPure        = ", Nash_equilibria_)
+    # # order the equilibria
+    # Nash_equilibria.sort()
+    # Nash_equilibria_.sort()
+    # print(Nash_equilibria_==Nash_equilibria)
+    # # exit()
+
+    # NashEqFinderInst.newEquilibria(nasheq_cells=[(('row','S5'), ('column','S3'))], strategies=strategies)
+    
     exit()
 
 
