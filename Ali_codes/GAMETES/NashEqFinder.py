@@ -1090,7 +1090,7 @@ class NashEqFinder(object):
         # you can use the big-M approach too, i.e., replaced them with -M and 
         # M, respectively. 
 
-        
+
         # Adding new attributes to self
         self.current_variables = copy.deepcopy(variables_names)
         self.current_binary_variables = []
@@ -1238,8 +1238,15 @@ class NashEqFinder(object):
 
             expression = NZ_a - 1
 
-            for var in self.current_y_binary_variables_optlang:
-                expression -= var
+            for var_name, var_primal in self.current_primals.items():
+                # Didn't work without it, which is weird
+                # Check if the variable optimal is positive and if it is not
+                # a binary variable
+                if var_primal > 0 and var_name not in (self.current_binary_variables + self.current_y_binary_variables):
+                    # get the binary variable y_α
+                    y_a = model.variables[var_name + "_binary" + f"_ya_{iteration}"]
+                    expression -= y_a
+                # check
 
             c4 = optlang.Constraint(
                     expression,
