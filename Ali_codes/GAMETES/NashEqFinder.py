@@ -1090,20 +1090,29 @@ class NashEqFinder(object):
         # you can use the big-M approach too, i.e., replaced them with -M and 
         # M, respectively. 
 
-
+        
         # Adding new attributes to self
         self.current_variables = copy.deepcopy(variables_names)
         self.current_binary_variables = []
         self.current_binary_constraints = []
         self.current_y_binary_variables = []
-        self.current_y_prime_binary_variables = []
         self.current_y_binary_variables_optlang = []
-        self.current_y_prime_binary_variables_optlang = []
         self.current_primals = {}
         for var_name, var in self.optModel.variables.items():
             # print(var_name, "=", var.primal)
             self.current_variables.append(var_name)
             self.current_primals[var_name] = var.primal
+
+        # adding a binary variable for each α
+        for var_name, var_primal in self.current_primals.items():
+            a = model.variables[var_name]
+            str_index_y_a = var_name + "_binary" + f"_ya" # no iteration needed in this method 
+            y_a = optlang.Variable(str_index_y_a, lb=0, type='binary', problem=model)
+            model.add(y_a)
+            self.current_binary_variables.append(str_index_y_a)
+            # Add the binary y variables to the list of binary variables
+            self.current_y_binary_variables.append(str_index_y_a)
+            self.current_y_binary_variables_optlang.append(y_a)
 
         # For iteration = 1 to 10
         for iteration in range(5):
@@ -1111,123 +1120,72 @@ class NashEqFinder(object):
             # Elie on 1/27/2023
             print(f"\n\n\n----iteration {iteration + 1}----\n\n\n")
             # print(f"----removing binary variables and constrains to start anew----\n")
-            self.current_variables = [e for e in self.current_variables if e not in (self.current_binary_variables + self.current_y_binary_variables + self.current_y_prime_binary_variables)]
+            self.current_variables = [e for e in self.current_variables if e not in (self.current_binary_variables + self.current_y_binary_variables)]
             print("self.current_variables for iteration", iteration+1, ":", self.current_variables)
             for key_to_remove in self.current_binary_variables:
-                del self.current_primals[key_to_remove]
+                if key_to_remove in self.current_primals:
+                    del self.current_primals[key_to_remove]
+                # del self.current_primals[key_to_remove]
             # On june 20
             epsilon = 1
             ub = 1000
             lb = -1000 
-            # print(f"Binary variablessss before iteration {iteration+1}:", self.current_binary_variables)
             for var_name, var_primal in self.current_primals.items():
                 # Didn't work without it, which is weird
                 # Check if the variable optimal is positive and if it is not
                 # a binary variable
-                if var_primal > 0 and var_name not in (self.current_binary_variables + self.current_y_binary_variables + self.current_y_prime_binary_variables):
-                    a_opt = var_primal
-                    # print(f'a_opt (which is variable {var_name}) for iteration {iteration+1} is', a_opt)
-                    a = model.variables[var_name]
-                    str_index_y_a = var_name + "_binary" + f"_ya_{iteration}"
-                    str_index_y_a_prime = var_name + "_binary" + f"_ya_prime_{iteration}"
-                    y_a = optlang.Variable(str_index_y_a, lb=0, type='binary', problem=model)
-                    y_a_prime = optlang.Variable(str_index_y_a_prime, lb=0, type='binary', problem=model)
-                    model.add(y_a)
-                    model.add(y_a_prime)
-                    # self.current_variables.append(str_index)
-                    self.current_binary_variables.append(str_index_y_a)
-                    self.current_binary_variables.append(str_index_y_a_prime)
-
-                    # Add the binary y variables to the list of binary variables
-                    self.current_y_binary_variables.append(str_index_y_a)
-                    self.current_y_prime_binary_variables.append(str_index_y_a_prime)
-
-                    self.current_y_binary_variables_optlang.append(y_a)
-                    self.current_y_prime_binary_variables_optlang.append(y_a_prime)
-
+                if var_primal > 0 and var_name not in (self.current_binary_variables + self.current_y_binary_variables):
                     # I will introduce two non-linear constraints:
-                    # 1. a <= (1-y_a)[(1-y_a_prime)(a_opt-epsilon) + y_a_prime*ub] + y_a*a_opt
-                    # 2. a >= (1-y_a)[y_a_prime(a_opt+epsilon) + (1-y_a_prime)lb] + y_a*a_opt
+                    # Define a binary variable y_α such that if y_α=1, then α≠0
+                    # and if y=0, then α=0 in the previous solution (note that 
+                    # here α could be either α^+ or α^-). This can be imposed 
+                    # using the following cosntrinat
+                    #               ϵy_α+(-M)(1-y_α)≤α≤(+M)y_α
+                    # Note that according to this constaint: 
+                    # y_α=1→α≠0
+                    # y_α=0→α=0
 
-                    # Turn the constraints into linear constraints
-                    # introduce the third binary variable z_a, and the constraints:
-                    # z_a <= y_a
-                    # z_a <= y_a_prime
-                    # z_a >= y_a + y_a_prime - 1
+                    # Keep in mind that:
+                    #     Here, ϵ is a small positive value (e.g., 10e-5)
+                    #     Here we define binary variables for each α^+ or α^- 
+                    #     only once, i..e, we do not define new binary variales 
+                    #     in each iteration. 
+                    # For the next solution, we want at least one perturbed 
+                    # payoff value to be different from the solution that we 
+                    # had before. We can easily impose this by using the 
+                    # following constraint:
+                    #              ∑_(α∈NZ)▒y_α ≤(card(NZ_α)-1)_+
 
-                    # Hence, constraints 1 becomes:
-                    # a <= [(1-y_a_prime)(a_opt-epsilon) + y_a_prime*ub] - [(y_a - z_a)(a_opt - epsilon) + z_a*ub] + y_a*a_opt
-                    # a >= [(y_a_prime)(a_opt+epsilon) + (1-y_a_prime)lb] - [z_a*(a_opt + epsilon) + (y_a - z_a)*lb] + y_a*a_opt
+                    # get the binary variable y_α
+                    y_a = model.variables[var_name + "_binary" + f"_ya"]
 
-                    # introduce the third binary variable z_a, and the constraints:
-                    str_index_z_a = var_name + "_binary" + f"_za_{iteration}"
-                    z_a = optlang.Variable(str_index_z_a, lb=0, type='binary', problem=model)
-                    model.add(z_a)
-                    self.current_binary_variables.append(str_index_z_a)
-
-                    # z_a <= y_a
-                    c_z_a_y_a = optlang.Constraint(
-                            y_a - z_a,
-                            lb=0
+                    # ϵy_α+(-M)(1-y_α)≤α≤(+M)y_α
+                    # ϵy_α+(-M)(1-y_α)≤α
+                    c_1 = optlang.Constraint(
+                            epsilon * y_a + (-ub) * (1 - y_a) - a,
+                            ub=0
                         )
-                    # z_a <= y_a_prime
-                    c_z_a_y_a_prime = optlang.Constraint(
-                            y_a_prime - z_a,
-                            lb=0
-                        )
-                    # z_a >= y_a + y_a_prime - 1
-                    c_z_a_y_a_y_a_prime = optlang.Constraint(
-                            z_a - y_a - y_a_prime + 1,
-                            lb=0
-                        )   
-
-                    # Hence, constraints 1 becomes:
-                    # a <= [(1-y_a_prime)(a_opt-epsilon) + y_a_prime*ub] - [(y_a - z_a)(a_opt - epsilon) + z_a*ub] + y_a*a_opt
-                    c1 = optlang.Constraint(
-                            (1 - y_a_prime) * (a_opt - epsilon) + y_a_prime * ub - (y_a - z_a) * (a_opt - epsilon) - z_a * ub + y_a * a_opt - a,
-                            lb = 0
-                        )
-                    # And constraint 2 becomes:
-                    # a >= [(y_a_prime)(a_opt+epsilon) + (1-y_a_prime)lb] - [z_a*(a_opt + epsilon) + (y_a - z_a)*lb] + y_a*a_opt
-                    c2 = optlang.Constraint(
-                            a - ((y_a_prime) * (a_opt + epsilon) + (1 - y_a_prime) * lb - z_a * (a_opt + epsilon) - (y_a - z_a) * lb + y_a * a_opt),
-                            lb=0
-                        )
-                    # y_a_prime <= 1 - y_a
-                    c3 = optlang.Constraint(
-                            1 - y_a - y_a_prime,
-                            lb=0
+                    # α≤(+M)y_α
+                    c_2 = optlang.Constraint(
+                            a - ub * y_a,
+                            ub=0
                         )
                     
-
-                    
-
-                    self.current_binary_constraints.append(c1)
-                    self.current_binary_constraints.append(c2)
-                    self.current_binary_constraints.append(c3)
-                    # self.current_binary_constraints.append(c4)
-                    self.current_binary_constraints.append(c_z_a_y_a)
-                    self.current_binary_constraints.append(c_z_a_y_a_prime)
-                    self.current_binary_constraints.append(c_z_a_y_a_y_a_prime)
-
-                    model.add(c1)
-                    model.add(c2)
-                    model.add(c3)
-                    # model.add(c4)
-                    model.add(c_z_a_y_a)
-                    model.add(c_z_a_y_a_prime)
-                    model.add(c_z_a_y_a_y_a_prime)
-
+                    # Add the constraints to the model
+                    self.current_binary_constraints.append(c_1)
+                    self.current_binary_constraints.append(c_2)
+                    model.add(c_1)
+                    model.add(c_2)
 
             # let NZ_a be the cardinality of the set of non-zero variables
-            # \sum y_a <= NZ_a - 1
+            # ∑_(α∈NZ)▒y_α ≤(card(NZ_α)-1)_
             NZ_a = 0
             print("Calculating NZ_a")
             for var_name, var_primal in self.current_primals.items():
-                print(var_name, var_primal)
-                if (var_primal > 0) and (var_name not in (self.current_binary_variables + self.current_y_binary_variables + self.current_y_prime_binary_variables)):
+                # print(var_name, var_primal)
+                if (var_primal > 0) and (var_name not in (self.current_binary_variables + self.current_y_binary_variables)):
                     NZ_a += 1
-            print()
+            print("NZ_a", NZ_a, "\n")
             # print("self.current_y_binary_variables", self.current_y_binary_variables)
             # print("self.current_binary_variables", self.current_binary_variables)
             # print("self.current_variables", self.current_variables)
@@ -1244,7 +1202,7 @@ class NashEqFinder(object):
                 # a binary variable
                 if var_primal > 0 and var_name not in (self.current_binary_variables + self.current_y_binary_variables):
                     # get the binary variable y_α
-                    y_a = model.variables[var_name + "_binary" + f"_ya_{iteration}"]
+                    y_a = model.variables[var_name + "_binary" + f"_ya"]
                     expression -= y_a
                 # check
 
@@ -1299,8 +1257,17 @@ class NashEqFinder(object):
             for var_name, var in self.optModel.variables.items():
                 print(var_name, "=", var)
             for var_name, var in self.optModel.variables.items():
-                print(var_name, "=")
+                print(var_name, "=", var.primal)
                 self.current_primals[var_name] = var.primal
+
+
+            changed_binary_variables = []
+            for var_name, var_primal in self.current_primals.items():
+                if var_name in self.current_binary_variables:
+                    if var_primal > 0:
+                        changed_binary_variables.append(var_name)
+
+            print("changed_binary_variables for iteration", iteration + 1, "is:", changed_binary_variables)
 
             
             # with open(f"log2.txt", "a") as f:
