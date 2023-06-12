@@ -1264,7 +1264,7 @@ class NashEqFinder(object):
             changed_binary_variables = []
             for var_name, var_primal in self.current_primals.items():
                 if var_name in self.current_binary_variables:
-                    if var_primal > 0:
+                    if not (var_primal > 0):
                         changed_binary_variables.append(var_name)
 
             print("changed_binary_variables for iteration", iteration + 1, "is:", changed_binary_variables)
