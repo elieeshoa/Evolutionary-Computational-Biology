@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Job parameters
+#BSUB -J job_920
+#BSUB -o /PHShome/ee869/Desktop/Elie-Zomorrodi/Ali_codes/GAMETES/jobs/output/job_920-%J.out
+#BSUB -N
+
+# The following line says to write the std output into the file to see the 
+# progress of the code in <desired_job_name>
+LSB_STDOUT_DIRECT=y
+
+# The following line specifies a specific queue:
+# (Alternatively you can use: # bsub -q normal < my-script.lsf)
+#BSUB -q normal
+#BSUB -R rusage[mem=4000]
+
+# --- User commands ----
+# Activate conda (ignore if you don?~@~Yt have anaconda installed)
+. /apps/software-2.12/Anaconda3/5.2.0/etc/profile.d/conda.sh
+
+# Load conda (ignore if you don?~@~Yt have anaconda installed)
+conda activate /PHShome/ee869/.conda/envs/manuscript
+
+# Start time
+start_time=$(date)
+echo -e "\n*** job_920 started at " $start_time "\n"
+
+#*** Put your commands here ***
+python /PHShome/ee869/Desktop/Elie-Zomorrodi/Ali_codes/GAMETES/run_games.py --size 920

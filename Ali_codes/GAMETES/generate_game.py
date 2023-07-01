@@ -32,7 +32,7 @@ def generate_random_matrix(SIZE):
     
 # write the payoff matrix to a file
 def write_matrix(payoff_matrix, SIZE):
-    print("Writing matrix to file")
+    print("Writing matrix to file a matrix of size ", SIZE)
     with open(f"matrices/payoff_matrix_{SIZE}.txt", "w") as f:
         for i in range(1,SIZE+1):
             for j in range(1,SIZE+1):
@@ -52,9 +52,9 @@ def read_matrix(payoff_matrix, SIZE):
                 payoff_matrix[('row', f"S{i+1}"), ('column', f"S{j+1}")] = \
                     {'row': int(lines[i].split()[2*j]), 'column': int(lines[i].split()[2*j+1])}
 
-def gen():
+def gen(sizes):
     # pupulate the payoff matrix with random payoffs upper triangle
-    for SIZE in [5, 10, 20, 30, 50, 75, 100, 150, 250, 400, 700, 1000]:
+    for SIZE in sizes:
         payoff_matrix = generate_random_matrix(SIZE)
         write_matrix(payoff_matrix, SIZE)
 
@@ -73,6 +73,27 @@ def generate_nash_equilibrium(SIZE):
     return payoff_matrix
 
 
+sizes = [5, 10, 20, 30, 50, 75, 100, 150, 250, 400, 700, 1000]
+# 315     99225
+# 385     148225
+# 445     198025
+# 500     250000
+# 550     302500
+# 590     348100
+# 630     396900
+# 670     448900
+# 705     497025
+# 740     547600
+# 775     600625
+# 805     648025
+# 835     697225
+# 865     748225
+# 895     801025
+# 920     846400
+# 950     902500
+# 975     950625
+sizes = [315, 385, 445, 500, 550, 590, 630, 670, 705, 740, 775, 805, 835, 865, 895, 920, 950, 975]
+gen(sizes)
 
 
 
@@ -80,7 +101,10 @@ def generate_nash_equilibrium(SIZE):
 
 
 
-SIZE = 25
+
+# SIZE = 4
+# payoff_matrix = generate_random_matrix(SIZE)
+# write_matrix(payoff_matrix, SIZE)
 # def convert_to_payoffMatrix_key(i):
 #     """
 #     This function converts the elements of the set I in the pyomo model
@@ -98,6 +122,7 @@ SIZE = 25
 #         if len(k1) == 0:
 #             done = 1
 #     return tuple(gameState)
+
 
 
 # payoff_matrix1 = {}

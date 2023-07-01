@@ -49,6 +49,7 @@ import matplotlib.pyplot as mpl
 
 # import pretty print
 from pprint import pprint
+from tqdm import tqdm
 
 # The following lines change the temporary directory for pyomo
 # from pyutilib.services import TempfileManager
@@ -64,7 +65,7 @@ class NashEqFinder(object):
     General class for NashEq Finder. Sample usage is provided at the end 
     """   
 
-    def __init__(self, game, NashEq_type = 'pure', optimization_solver = 'gurobi', warnings = True, stdout_msgs = True, output_file = ''):
+    def __init__(self, game, NashEq_type = 'pure', optimization_solver = 'gurobi', warnings = True, stdout_msgs=False, output_file = '', stdout_timing=True):
         """
         INPUTS 
         ------
@@ -124,7 +125,12 @@ class NashEqFinder(object):
         if not isinstance(stdout_msgs,bool):
             raise TypeError("Error! stdout_msgs should be True or False")
         else:
-             self.stdout_msgs = stdout_msgs
+            self.stdout_msgs = stdout_msgs
+
+        if not isinstance(stdout_timing,bool):
+            raise TypeError("Error! stdout_timing should be True or False")
+        else:
+            self.stdout_timing = stdout_timing
 
         # Output file
         if not isinstance(output_file, str):
@@ -633,7 +639,7 @@ class NashEqFinder(object):
                 table_text.append(row)
             return col_text, table_text
 
-        if self.stdout_msgs:
+        if self.stdout_timing:
             print(f"Time before defining the table: {datetime.datetime.now()}")
         table = payoffs_to_table(payoff_matrix)
         the_table = ax.table(#colWidths=[0.3] * (SIZE + 1),
@@ -653,7 +659,7 @@ class NashEqFinder(object):
                 strategies.index(changed_cell[0][0][1][1])+1
             )
         
-        if self.stdout_msgs:
+        if self.stdout_timing:
             print(f"Time before setting the cells colors: {datetime.datetime.now()}")
 
         changed_cells_positions = [changed_cell_to_position(cell) for cell in changed_cells]
@@ -663,7 +669,7 @@ class NashEqFinder(object):
         def letter_to_position(letter):
             return strategies.index(letter) + 1
         
-        if self.stdout_msgs:
+        if self.stdout_timing:
             print(f"Time before setting the cells colors again: {datetime.datetime.now()}")
         for eq in range(len(nash_equilibria)):
             the_table[
@@ -671,7 +677,7 @@ class NashEqFinder(object):
                 letter_to_position(nash_equilibria[eq][1][1])
                 ].set_facecolor('#5dbcd2')
 
-        if self.stdout_msgs:
+        if self.stdout_timing:
             print(f"Time before closed grid edges: {datetime.datetime.now()}")
         for (row, col), cell in the_table.get_celld().items():
             cell.visible_edges = ''
@@ -680,7 +686,7 @@ class NashEqFinder(object):
 
         nasheq_positions = []
 
-        if self.stdout_msgs:
+        if self.stdout_timing:
             print(f"Time before adding nasheq_positions: {datetime.datetime.now()}")
         for eq in range(len(nash_equilibria)):
             nasheq_positions.append(
@@ -697,6 +703,15 @@ class NashEqFinder(object):
                         the_table[row, col].set_fontsize(14)
                     else:
                         the_table[row, col].set_fontsize(12)
+
+        elif size == 5:
+            for row in range(size+1):
+                for col in range(size+1):
+                    if (row, col) not in nasheq_positions:
+                        the_table[row, col].set_fontsize(8)
+                    else:
+                        the_table[row, col].set_fontsize(8)
+                        
         elif size == 10:
             for row in range(size+1):
                 for col in range(size+1):
@@ -705,9 +720,10 @@ class NashEqFinder(object):
                     else:
                         the_table[row, col].set_fontsize(4)
 
-        if self.stdout_msgs:
+        if self.stdout_timing:
             print(f"Time before saving the PNG: {datetime.datetime.now()}")
-        print(f"saving the PNG file for size {len(strategies)}")
+        if self.stdout_msgs:
+            print(f"saving the PNG file for size {len(strategies)}")
         # set title based on iteration
         # if iteration is in method.split(' ') find the word after it
         # if iteration is not in method.split(' ') then just use the method
@@ -721,8 +737,38 @@ class NashEqFinder(object):
         
         # set title with big font
         ax.set_title(f"{title}", fontsize=20)
-        mpl.savefig(f'PNGs_june_2023/size = {len(strategies)}, {method}.png', dpi=1000)
-        mpl.show()
+        mpl.savefig(f'PNGs Summer 2023/size = {len(strategies)}, {method}.png', dpi=1000)
+        # mpl.show()
+
+    
+    # a function that checks if the desired cells are nash equilibria
+    def check_if_nash_equilibria(self, desired_cells, payoff_matrix, strategies):
+        """
+        this function returns True if the desired cell is a nash equilibrium
+        and in the payoff matrix, and False otherwise
+
+        desired_cells: a list of elements of format (('row', 'S15'), ('column', 'S10'))
+        """
+        for cell in desired_cells:
+            # cell is of format [(('row',f'S{i}'), ('column',f'S{j}'))]
+            # check that the first entry is greater than all first entries that are in the same column
+            # check that the second entry is greater than all second entries that are in the same row
+            # if both are true, then the cell is a Nash Equilibrium
+            # for all payoff_matrix cells that start with ('row',f'S{i}'), check that they are greater than cell[0][1]
+            row_values = [
+                self.game.payoff_matrix[('row', strategy), cell[1]]['row'] <= 
+                self.game.payoff_matrix[cell]['row'] for strategy in strategies 
+                if ('row', strategy) != cell[0]
+                ]
+            column_values = [
+                self.game.payoff_matrix[cell[0], ('column', strategy)]['column'] <= 
+                self.game.payoff_matrix[cell]['column'] for strategy in strategies 
+                if ('column', strategy) != cell[1]
+                ]
+            if all(row_values) and all(column_values):
+                return True
+            else:
+                return False
 
 
     # Elie in 9/5/2022
@@ -739,7 +785,7 @@ class NashEqFinder(object):
 
         original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
         
-        if self.stdout_msgs:
+        if self.stdout_timing:
             print(f"Time before creating the matrix of the perterbations: {datetime.datetime.now()}")
         # Creating new payoff matrix (i.e. the result of perterbations)
         # TODO: check if this is the right way to do it
@@ -751,7 +797,7 @@ class NashEqFinder(object):
                 self.game.payoff_matrix[matrix_key][player] -= var_primal
 
         # Get the cells that changed
-        if self.stdout_msgs:
+        if self.stdout_timing:
             print(f"Time before getting the changed cells: {datetime.datetime.now()}")
         changed_cells = []
         for var_name, var_primal in self.current_primals.items():
@@ -759,9 +805,9 @@ class NashEqFinder(object):
                 changed_cells.append((string_to_index(var_name), var_primal))
 
         # Write changed cells into a file
-        if self.stdout_msgs:
+        if self.stdout_timing:
             print(f"Time before writing the changed cells: {datetime.datetime.now()}")
-        with open(f"results4/size = {size}, {method}_{iteration}_results.txt", "w") as f:
+        with open(f"Results Summer 2023/size = {size}, {method}_{iteration}_results.txt", "w") as f:
             f.write("Changed cells:\n")
             for cell in changed_cells:
                 f.write(str(cell) + "\n")
@@ -772,17 +818,24 @@ class NashEqFinder(object):
             pprint(changed_cells)
 
         
-        # Define an instance of the NashEqFinder
-        if self.stdout_msgs:
+        # Check that the desired cells are Nash Equilibria
+        if self.stdout_timing:
             print(f"Time before checking that the the desired cells are Nash Equilibria: {datetime.datetime.now()}")
+        
+        success = self.check_if_nash_equilibria(nasheq_cells, self.game.payoff_matrix, self.game.players_strategies['row'])
+        # if self.stdout_msgs:
+        if success:
+            print("The desired cells are Nash Equilibria")
+        else:
+            print("The desired cells are NOT Nash Equilibria")
                 
         # add to the file
-        if self.stdout_msgs:
-            print(f"Time before writing to results4: {datetime.datetime.now()}")
-        with open(f"results4/size = {size}, {method}_{iteration}_results.txt", "a") as f:
+        if self.stdout_timing:
+            print(f"Time before writing to Results Summer 2023: {datetime.datetime.now()}")
+        with open(f"Results Summer 2023/size = {size}, {method}_{iteration}_results.txt", "a") as f:
             f.write(f"\n\nDesired nash_equilibria = {nasheq_cells}\n")
 
-        self.show_matrix_2c(original_payoff_matrix, self.game.payoff_matrix, nasheq_cells, self.game.players_strategies['row'], method, changed_cells)
+        # self.show_matrix_2c(original_payoff_matrix, self.game.payoff_matrix, nasheq_cells, self.game.players_strategies['row'], method, changed_cells)
   
         print(f"DONE Validation of {method}")
 
@@ -807,6 +860,8 @@ class NashEqFinder(object):
         # Adding new variables 
         model = optlang.Model(name=f'Original Model')
         model.players = self.game.players_names
+        if self.stdout_timing:
+            print(f"Time before creating indices for original model: {datetime.datetime.now()}")
         indices = [tuple([k3 for k2 in k1 for k3 in k2]) for k1 in self.game.payoff_matrix.keys()]
         new_indices = []
         for index in indices:
@@ -820,19 +875,25 @@ class NashEqFinder(object):
         variables_names = []
 
         # Add the variables
-        for index in model.indices:
+        if self.stdout_timing:
+            print(f"Time before adding variables to original model: {datetime.datetime.now()}")
+        for index in tqdm(model.indices):
             var_name = tuple_to_var_name(index)
             var = optlang.Variable(var_name, lb=0, type='continuous', problem=model)
             variables_names.append(var_name)
             model.add(var)
 
-        # Add the objective function
+        # Add the objective function SLOW
         model.objective = optlang.Objective(expression=sympy.Add(*(sympy.symbols(variables_names))), direction='min')
+        # make it faster'
+        
 
         # Add the constraints
         constraints = []
         # Each `cell` is of the format (('row','C'),('column','C'))
-        for cell in nasheq_cells:    
+        if self.stdout_timing:
+            print(f"Time before adding constraints to original model: {datetime.datetime.now()}")
+        for cell in tqdm(nasheq_cells):
             root_index = tuple_to_var_name(cell)
             # For first player we loop over first axis (rows=strategies)
             for strategy in [x for x in strategies if x != cell[0][1]]:
@@ -885,7 +946,9 @@ class NashEqFinder(object):
         # Neccessary for validate_2c
         self.current_variables = copy.deepcopy(variables_names)
         self.current_primals = {}
-        for var_name, var in self.optModel.variables.items():
+        if self.stdout_timing:
+            print(f"Time before self.current_primals[var_name] = var.primal: {datetime.datetime.now()}")
+        for var_name, var in tqdm(self.optModel.variables.items()):
             # print(var_name, "=", var.primal)
             self.current_variables.append(var_name)
             self.current_primals[var_name] = var.primal
@@ -896,6 +959,9 @@ class NashEqFinder(object):
         self.current_binary_constraints = []
         self.current_y_binary_variables = []
         self.current_y_binary_variables_optlang = []
+
+        if self.stdout_timing:
+            print(f"Time before validate_2c on original model: {datetime.datetime.now()}")
         self.validate_2c(nasheq_cells, method=f'First solution with new equilibria={nasheq_cells} precluded', iteration="NONE", time_spent=end_time-start_time, size=len(strategies))
         self.game.payoff_matrix = original_payoff_matrix
 
@@ -918,13 +984,15 @@ class NashEqFinder(object):
 
         
         # Adding new attributes to self
+        if self.stdout_timing:
+            print(f"Time before adding new attributes: {datetime.datetime.now()}")
         self.current_variables = copy.deepcopy(variables_names)
         self.current_binary_variables = []
         self.current_binary_constraints = []
         self.current_y_binary_variables = []
         self.current_y_binary_variables_optlang = []
         self.current_primals = {}
-        for var_name, var in self.optModel.variables.items():
+        for var_name, var in tqdm(self.optModel.variables.items()):
             # print(var_name, "=", var.primal)
             # TODO: Check if this is needed
             self.current_variables.append(var_name)
@@ -934,8 +1002,9 @@ class NashEqFinder(object):
             self.current_primals[var_name] = var.primal
 
         # adding a binary variable for each α
-        for var_name, var_primal in self.current_primals.items():
-            a = model.variables[var_name]
+        if self.stdout_timing:
+            print(f"Time before adding binary variables for each α: {datetime.datetime.now()}") # SLOW
+        for var_name, var_primal in tqdm(self.current_primals.items()):
             str_index_y_a = var_name + "_binary" + f"_ya" # no iteration needed in this method 
             y_a = optlang.Variable(str_index_y_a, lb=0, type='binary', problem=model)
             model.add(y_a)
@@ -944,31 +1013,46 @@ class NashEqFinder(object):
             self.current_y_binary_variables.append(str_index_y_a)
             self.current_y_binary_variables_optlang.append(y_a)
 
-        # For iteration = 1 to 10
-        for iteration in range(8):
+        # For iteration = 1 to 5
+        for iteration in range(3):
             # print the payoff matrix
             # Elie on 1/27/2023
             print(f"\n\n\n----iteration {iteration + 1}----\n\n\n")
             # print the payoff matrix
-            print("Payoff matrix at the beginning of iteration", iteration+1, ":")
-            pprint(self.game.payoff_matrix)
+            if self.stdout_msgs:
+                print("Payoff matrix at the beginning of iteration", iteration+1, ":")
+                pprint(self.game.payoff_matrix)
+
+            set_binary_vars = set(self.current_binary_variables + self.current_y_binary_variables)
 
             # print(f"----removing binary variables and constrains to start anew----\n")
-            self.current_variables = [e for e in self.current_variables if e not in (self.current_binary_variables + self.current_y_binary_variables)]
-            print("self.current_variables for iteration", iteration+1, ":", self.current_variables)
-            for key_to_remove in self.current_binary_variables:
-                if key_to_remove in self.current_primals:
+            if self.stdout_timing:
+                print(f"Time before setting self.current_variables: {datetime.datetime.now()}")
+
+            self.current_variables = [e for e in self.current_variables if e not in set_binary_vars]
+            if self.stdout_msgs:
+                print("self.current_variables for iteration", iteration+1, ":", self.current_variables)
+
+            if self.stdout_timing:
+                print(f"Time before removing binary variables from self.current_primals: {datetime.datetime.now()}")
+
+            set_current_primals = set(self.current_primals.keys())
+            for key_to_remove in tqdm(self.current_binary_variables):
+                if key_to_remove in set_current_primals:
                     del self.current_primals[key_to_remove]
                 # del self.current_primals[key_to_remove]
             # On june 20
             epsilon = 1
             ub = 1000
             lb = -1000 
-            for var_name, var_primal in self.current_primals.items():
+
+            if self.stdout_timing:
+                print(f"Time before adding for var_name, var_primal in self.current_primals.items(): {datetime.datetime.now()}")
+            for var_name, var_primal in tqdm(self.current_primals.items()):
                 # Didn't work without it, which is weird
                 # Check if the variable optimal is positive and if it is not
                 # a binary variable
-                if var_primal > 0 and var_name not in (self.current_binary_variables + self.current_y_binary_variables):
+                if var_primal > 0 and var_name not in set_binary_vars:
                     # I will introduce two non-linear constraints:
                     # Define a binary variable y_α such that if y_α=1, then α≠0
                     # and if y=0, then α=0 in the previous solution (note that 
@@ -1015,16 +1099,17 @@ class NashEqFinder(object):
                     model.add(c_1)
                     model.add(c_2)
 
-                    print("c_1", c_1)
-                    print("c_2", c_2)
+                    if self.stdout_msgs:
+                        print("c_1", c_1)
+                        print("c_2", c_2)
 
             # let NZ_a be the cardinality of the set of non-zero variables
             # ∑_(α∈NZ)▒y_α ≤(card(NZ_α)-1)_
             NZ_a = 0
             print("Calculating NZ_a")
-            for var_name, var_primal in self.current_primals.items():
+            for var_name, var_primal in tqdm(self.current_primals.items()):
                 # print(var_name, var_primal)
-                if (var_primal > 0) and (var_name not in (self.current_binary_variables + self.current_y_binary_variables)):
+                if (var_primal > 0) and (var_name not in set_binary_vars):
                     NZ_a += 1
             print("NZ_a", NZ_a, "\n")
             # print("self.current_y_binary_variables", self.current_y_binary_variables)
@@ -1037,11 +1122,13 @@ class NashEqFinder(object):
 
             expression = NZ_a - 1
 
-            for var_name, var_primal in self.current_primals.items():
+            if self.stdout_timing:
+                print(f"Time before accumulating expression using -= y_a: {datetime.datetime.now()}")
+            for var_name, var_primal in tqdm(self.current_primals.items()):
                 # Didn't work without it, which is weird
                 # Check if the variable optimal is positive and if it is not
                 # a binary variable
-                if var_primal > 0 and var_name not in (self.current_binary_variables + self.current_y_binary_variables):
+                if var_primal > 0 and var_name not in set_binary_vars:
                     # get the binary variable y_α
                     y_a = model.variables[var_name + "_binary" + f"_ya"]
                     expression -= y_a
@@ -1051,8 +1138,9 @@ class NashEqFinder(object):
                     expression,
                     lb=0
                 )
-            print("c4", c4)
-            print()
+            if self.stdout_msgs:
+                print("c4", c4)
+                print()
             model.add(c4)
             self.current_binary_constraints.append(c4)
             # print("current_binary_constraints")
@@ -1070,6 +1158,9 @@ class NashEqFinder(object):
                     expression=sympy.Add(*sympy.symbols(self.current_variables)),
                     direction='min'
                 )
+            
+            if self.stdout_timing:
+                print(f"Time before 'add every binary variable to current_variables': {datetime.datetime.now()}")
 
             # add every binary variable to current_variables
             for var in self.current_binary_variables:
@@ -1077,52 +1168,61 @@ class NashEqFinder(object):
 
             for var in self.current_y_binary_variables:
                 self.current_variables.append(var)
-            # print(f"Binary variablessss after iteration {iteration+1}:", self.current_binary_variables)
-
-            # print('self.current_binary_constraints:')
-            # for con in self.current_binary_constraints:
-            #     print(con) 
             
             self.optModel = model  
             # printing model before optimization in iteration + 1
-            print(f"Model before optimization in iteration {iteration + 1} is:", self.optModel)
+            if self.stdout_msgs:
+                print(f"Model before optimization in iteration {iteration + 1} is:", self.optModel)
             # print the model before optimization
             start_time = datetime.datetime.now()
-            print("Optimizing the model in iteration", iteration + 1, "started at:", start_time)
+            if self.stdout_msgs:
+                print("Optimizing the model in iteration", iteration + 1, "started at:", start_time)
             status = self.optModel.optimize()
-            print(f"Status of the optimization in iteration {iteration + 1} is:", status)
-
             end_time = datetime.datetime.now()
-            print("self.current_primals for iteration", iteration + 1, "is:")
-            pprint(self.current_primals)
+            if self.stdout_msgs:
+                print(f"Status of the optimization in iteration {iteration + 1} is:", status)
+            with open(f"log Summer 2023.txt", "a") as f:
+                f.write(f"\nsize = {len(strategies)}, date: {datetime.datetime.now()}, iteration {iteration} with desired nash equilibria: {nasheq_cells} || Time: {end_time - start_time}")
+
+            # for i in range(5):
+            #     start_time = datetime.datetime.now()
+            #     status = self.optModel.optimize()
+            #     end_time = datetime.datetime.now()
+            #     with open(f"log Summer 2023.txt", "a") as f:
+            #         f.write(f"\nsize = {len(strategies)}, repeated iteration {iteration} with desired nash equilibria: {nasheq_cells} || Time: {end_time - start_time}")
+
+
+
+            
+
+            # break if the model is infeasible
+            if status == "infeasible":
+                print("The model is infeasible")
+                break
+            
+            if self.stdout_msgs:
+                print("self.current_primals for iteration", iteration + 1, "is:")
+                pprint(self.current_primals)
             if self.stdout_msgs:
                 print("self.optModel.variables for iteration", iteration + 1, "is:")
                 for var_name, var in self.optModel.variables.items():
                     print(var_name, "=", var)
 
-            # print the primal values
-            print("The current primal values for iteration", iteration + 1, "is:")
+            # set the current_primals to the optimal values
+            if self.stdout_msgs:
+                print("The current primal values for iteration", iteration + 1, "is:")
             for var_name, var in self.optModel.variables.items():
-                # if self.stdout_msgs:
-                print(var_name, "=", var.primal)
+                if self.stdout_msgs:
+                    print(var_name, "=", var.primal)
                 self.current_primals[var_name] = var.primal
 
             # print the binary variables primal values
-            print("The current binary variables primal values for iteration", iteration + 1, "is:")
-            for var_name, var in self.optModel.variables.items():
-                if var_name in self.current_binary_variables or var_name in self.current_y_binary_variables:
-                    print(var_name, "=", var.primal)
-                    # self.current_primals[var_name] = var.primal
+            if self.stdout_msgs:
+                print("The current binary variables primal values for iteration", iteration + 1, "is:")
+                for var_name, var in self.optModel.variables.items():
+                    if var_name in self.current_binary_variables or var_name in self.current_y_binary_variables:
+                        print(var_name, "=", var.primal)
 
-
-            # changed_binary_variables = []
-            # for var_name, var_primal in self.current_primals.items():
-            #     if var_name in self.current_binary_variables:
-            #         if not (var_primal > 0):
-            #             changed_binary_variables.append(var_name)
-
-            # print("changed_binary_variables for iteration", iteration + 1, "is:", changed_binary_variables)
-            
             original_payoff_matrix = copy.deepcopy(self.game.payoff_matrix)
             self.validate_2c(nasheq_cells, method=f"New Method 2c iteration {iteration + 1}, epsilon={epsilon}, with new equilibria={nasheq_cells} precluded", iteration=str(iteration), time_spent=end_time - start_time, size=len(strategies))
             # TODO: is this accurate? maybe not because validate_2c writes
@@ -1131,12 +1231,7 @@ class NashEqFinder(object):
             self.game.payoff_matrix = original_payoff_matrix
         
 
-# Elie on 11/18/2022
 def show_matrix_original(original_payoff_matrix, payoff_matrix, nash_equilibria, strategies, method, changed_cells):  
-        # print(f"Time before writing to limited_show_matrix_2c.txt: {datetime.datetime.now()}")
-        # commented it out on 10/20/2022
-        # with open(f"limited_show_matrix_2c.txt", "a") as f:
-        #     f.write(f"\n\nSize = {len(strategies)}\n Method: {method} \nnash_equilibria: {nash_equilibria} \nchanged_cells: {changed_cells} \nTime: {datetime.datetime.now()}")
         fig, ax = mpl.subplots()
         fig.patch.set_visible(False)
         ax.axis('off')
@@ -1165,10 +1260,8 @@ def show_matrix_original(original_payoff_matrix, payoff_matrix, nash_equilibria,
                             return s
 
                     row.append(
-                        # ("({:s} " + check_0(round(new1 - float(og1), 4)) + ", {:s}" + check_0(round(new2 - float(og2), 4)) + ")").format(str(round(float(og1), 4)), str(round(new1 - float(og1), 4)), str(round(float(og2), 4)), str(round(new2 - float(og2), 4)))
-                        f"({remove_zeroes(str(round(float(og1), 4)))}" + check_0(str(round(new1 - float(og1), 4))) + f", {remove_zeroes(str(round(float(og2), 4)))}" + check_0(str(round(new2 - float(og2), 4))) + ")"
-                        # ("{:s} + {:s}".format(str(round(og, 4)), str(round(new1 - og, 4))), \
-                        #  "{:s} + {:s}".format(str(round(og, 4)), str(round(new2 - og, 4))))
+                        f"({remove_zeroes(str(round(float(og1), 4)))}" + check_0(str(round(new1 - float(og1), 4))) +
+                        f", {remove_zeroes(str(round(float(og2), 4)))}" + check_0(str(round(new2 - float(og2), 4))) + ")"
                     )
                 table_text.append(row)
                 # print("dis row", row)
@@ -1203,37 +1296,23 @@ def show_matrix_original(original_payoff_matrix, payoff_matrix, nash_equilibria,
         def letter_to_position(letter):
             return strategies.index(letter) + 1
         
-        # print(f"Time before setting the cells colors again: {datetime.datetime.now()}")
         for eq in range(len(nash_equilibria)):
             the_table[
                 letter_to_position(nash_equilibria[eq][0][1]), 
                 letter_to_position(nash_equilibria[eq][1][1])
                 ].set_facecolor('#5dbcd2')
 
-        
-        # print(f"Time before closed grid edges: {datetime.datetime.now()}")
         for (row, col), cell in the_table.get_celld().items():
             cell.visible_edges = ''
             if col != 0 and row != 0:
                 cell.visible_edges = 'closed'
 
         nasheq_positions = []
-        # print(f"Time before adding nasheq_positions: {datetime.datetime.now()}")
         for eq in range(len(nash_equilibria)):
             nasheq_positions.append(
                 (letter_to_position(nash_equilibria[eq][0][1]), \
                 letter_to_position(nash_equilibria[eq][1][1]))
             )
-
-        # Old before July 6
-        # the_table.auto_set_font_size(False)
-        # for row in range(SIZE+1):
-        #     for col in range(SIZE+1):
-        #         # if (row, col) not in nasheq_positions and (row, col) not in changed_cells_positions:
-        #         #     the_table[row, col].set_fontsize(3.5)
-        #         # else:
-        #         #     the_table[row, col].set_fontsize(1.4)
-
 
         size = len(strategies)
         the_table.auto_set_font_size(False)
@@ -1252,8 +1331,6 @@ def show_matrix_original(original_payoff_matrix, payoff_matrix, nash_equilibria,
                     else:
                         the_table[row, col].set_fontsize(4)
 
-        # print(f"Time before saving the PNG: {datetime.datetime.now()}")
-        # print(f"saving the PNG file for size {len(strategies)}")
         # set title based on iteration
         # if iteration is in method.split(' ') find the word after it
         # if iteration is not in method.split(' ') then just use the method
@@ -1277,31 +1354,64 @@ if __name__ == "__main__":
     print ("\n\n\n\n\n\n\n\n\n\n")
     
     #---------------------------------- 
-    # print ("\n-- Prisoner's Dilemma ---")
-    # Pure strategy Nash eq = (D,D)
+    # # print ("\n-- Prisoner's Dilemma ---")
+    # # Pure strategy Nash eq = (D,D)
     
-    game_name = "Prisoner's Dilemma"
-    numberOfPlayers = 2
+    # game_name = "Prisoner's Dilemma"
+    # numberOfPlayers = 2
+    # players_names = ['row','column']
+    
+    # players_strategies = {}
+    # players_strategies['row'] = ['C','D']
+    # players_strategies['column'] = ['C','D']
+    
+    # payoff_matrix = {}
+    # payoff_matrix[(('row','C'),('column','C'))] = {'row':-1,'column':-1}
+    # payoff_matrix[(('row','C'),('column','D'))] = {'row':-4,'column':0}
+    # payoff_matrix[(('row','D'),('column','C'))] = {'row':0,'column':-4}
+    # payoff_matrix[(('row','D'),('column','D'))] = {'row':-3,'column':-3}
+    
+    # # Define an instance of the game
+    # PD = game(game_name, players_names, players_strategies, payoff_matrix)
+    
+    # # Define an instance of the NashEqFinder
+    # NashEqFinderInst = NashEqFinder(PD, stdout_msgs = False)
+    # [Nash_equilibria, exit_flag, game_payoff_matrix] = NashEqFinderInst.optlangRun()
+    # # (self, original_payoff_matrix, payoff_matrix, nash_equilibria, strategies, method, changed_cells)
+    # show_matrix_original(game_payoff_matrix, game_payoff_matrix, Nash_equilibria, players_strategies['row'], "Original Payoff Matrix", [])       
+
+    # NashEqFinderInst.newEquilibria(nasheq_cells=[(('row','C'), ('column','C'))], strategies=['C', 'D'])
+    
+    def read_matrix(payoff_matrix, SIZE):
+        print("Reading the payoff matrix from the file")
+        with open(f"matrices/payoff_matrix_{SIZE}.txt", "r") as f:
+            lines = f.readlines()
+            # print(len(lines))
+            # print(len(lines[0].split()))
+            for i in range(SIZE):
+                for j in range(SIZE):
+                    payoff_matrix[('row', f"S{i+1}"), ('column', f"S{j+1}")] = \
+                        {'row': int(lines[i].split()[2*j]), 'column': int(lines[i].split()[2*j+1])}
+
+    """ 5 by 5 """
+    SIZE = 4
+    game_name = f"{SIZE} strategies"
     players_names = ['row','column']
-    
     players_strategies = {}
-    players_strategies['row'] = ['C','D']
-    players_strategies['column'] = ['C','D']
-    
+    strategies = ['S' + str(i) for i in range(1,SIZE+1)]
+    players_strategies['row'] = strategies
+    players_strategies['column'] = strategies
     payoff_matrix = {}
-    payoff_matrix[(('row','C'),('column','C'))] = {'row':-1,'column':-1}
-    payoff_matrix[(('row','C'),('column','D'))] = {'row':-4,'column':0}
-    payoff_matrix[(('row','D'),('column','C'))] = {'row':0,'column':-4}
-    payoff_matrix[(('row','D'),('column','D'))] = {'row':-3,'column':-3}
-    
-    # Define an instance of the game
+    print(f"Time before reading the matrix: {datetime.datetime.now()}")
+    read_matrix(payoff_matrix, SIZE)
     PD = game(game_name, players_names, players_strategies, payoff_matrix)
-    
-    # Define an instance of the NashEqFinder
     NashEqFinderInst = NashEqFinder(PD, stdout_msgs = False)
     [Nash_equilibria, exit_flag, game_payoff_matrix] = NashEqFinderInst.optlangRun()
-    # (self, original_payoff_matrix, payoff_matrix, nash_equilibria, strategies, method, changed_cells)
-    show_matrix_original(game_payoff_matrix, game_payoff_matrix, Nash_equilibria, players_strategies['row'], "Original Payoff Matrix", [])       
-
-    NashEqFinderInst.newEquilibria(nasheq_cells=[(('row','C'), ('column','C'))], strategies=['C', 'D'])
-    
+    # show_matrix_original(game_payoff_matrix, game_payoff_matrix, Nash_equilibria, strategies, "Original Payoff Matrix", [])
+    # i = random.randint(1, SIZE)
+    # j = random.randint(1, SIZE)
+    # i = 2
+    # j = 1 TODO this considered a 8^-15 change a change. should this be considered a change?
+    i = 1
+    j = 2
+    NashEqFinderInst.newEquilibria(nasheq_cells=[(('row',f'S{i}'), ('column',f'S{j}'))], strategies=strategies)

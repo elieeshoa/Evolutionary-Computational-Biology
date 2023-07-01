@@ -61,53 +61,226 @@ size = 1000, 2c iteration 4 with desired nach equilibria: [(('row', 'S441'), ('c
 # We also plot the theoretical time complexity of the algorithm, which is O(n^2).
 # We see that the algorithm is indeed O(n^2), as the plot is a straight line.
 
-def get_averages():
+def get_averages(string):
     sizes = [5, 10, 20, 30, 50, 100, 250, 400, 700, 1000]
-    averages = []
-    for i in range(len(sizes)):
-        # Get the average time for each size
-        # Get the lines of the string 'string' defined above
-        lines = string.split('\n')
-        times = [(line.split('||')[1].split(': ')[1]) for line in lines[i*5:i*5+5]]
-        # turn the string datetimes into seconds
-        times = [dt.strptime(time, '%H:%M:%S.%f') for time in times]
-        times = [time.second + time.microsecond/1000000 for time in times]
-        print(times)
-        average = sum(times)/len(times)
-        averages.append(average)
-    print(averages)
-    return averages
+    # averages = []
+    # for i in range(len(sizes)):
+    #     # Get the average time for each size
+    #     # Get the lines of the string
+    #     lines = string.split('\n')
+    #     times = [(line.split('||')[1].split(': ')[1]) for line in lines[i*5:i*5+5]]
+    #     # turn the string datetimes into seconds
+    #     times = [dt.strptime(time, '%H:%M:%S.%f') for time in times]
+    #     times = [time.second + time.microsecond/1000000 for time in times]
+    #     print(times)
+    #     average = sum(times)/len(times)
+    #     averages.append(average)
+    # print(averages)
+    # return averages
 
-def plot_averages():
-    sizes = [5, 10, 20, 30, 50, 100, 250, 400, 700, 1000]
-    averages = get_averages()
+    lines = string_summer_2023.split('\n')
+
+    # Create a dictionary of times for every size.
+    times = {}
+    
+    for line in lines:
+        # Get the size from the line.
+        size = line.split('size = ')[1].split(',')[0]
+
+        # Get the time from the line.
+        time = dt.strptime(line.split('Time: ')[1], '%H:%M:%S.%f')
+
+        # Format the time as seconds.
+        time = time.second + time.microsecond/1000000 + time.minute*60
+
+        print(f"for size {size}, time is {time}")
+
+        # Add the time to the dictionary of times for the given size.
+        if size in times:
+            times[size].append(time)
+        else:
+            times[size] = [time]
+
+
+    # Calculate the average time for every size.
+    average_times = {}
+    for size in times:
+        average_times[size] = sum(times[size])/len(times[size])
+
+    occurences = {size: len(times[size]) for size in times}
+    return average_times, occurences
+
+def plot_averages(string, quadratic=True):
+    # sizes = [5, 10, 20, 30, 50, 100, 250, 400, 700, 1000]
+    # averages = get_averages(string)
+
+    averages_dict, occurences_dict = get_averages(string)
+    sizes = [int(size) for size in averages_dict.keys()]
+    sizes.sort()
+    averages = [averages_dict[str(size)] for size in sizes]
+
+    for size, average in zip(sizes, averages):
+        print(f"size {size} has square {size**2} and average {average} over {occurences_dict[str(size)]} occurences")
+
+
+
+
     
     # plt.plot(sizes, [size**2 for size in sizes])
     # fit a quadratic curve to the data
-    fit = np.polyfit(sizes, averages, 2)
-    fit_fn = np.poly1d(fit)
-    # draw the fit curve fit_fn(sizes) for a range from 0 to 1000
-    x = np.linspace(0, 1000, 1000)
-    plt.plot(x, fit_fn(x), '--k', label='Quadratic fit', linewidth=1, color='dodgerblue', alpha=0.8)
-    
-    plt.plot(sizes, averages, label='Average Time', linewidth=1, color='red')
-    # plot the data points
-    plt.scatter(sizes, averages, color='red', s=15)
+    if quadratic:
+        fit = np.polyfit(sizes, averages, 2)
+        fit_fn = np.poly1d(fit)
+        # draw the fit curve fit_fn(sizes) for a range from 0 to 1000
+        x = np.linspace(5, max(sizes), 1000)
+        # plt.plot(x, fit_fn(x), '--k', label='Quadratic fit', linewidth=1, color='dodgerblue', alpha=0.8)
+        plt.plot(x, fit_fn(x), '--k', label='Quadratic fit', linewidth=1.2, color='#00A6B7', alpha=0.8)
+        plt.xticks(np.arange(0, max(sizes)+1, 100))
+        # give them 45 degree angle
+        plt.xticks(rotation=45)
+        
+        # plt.plot(sizes, averages, label='Average Time', linewidth=1, color='red')
+        # make the color FF6805
+        plt.plot(sizes, averages, label='Average Time', linewidth=1.5, color='#FF7F00')
+        # label the points with how many times they occured
+
+        # plot the data points
+        # plt.scatter(sizes, averages, color='red', s=15)
+        plt.scatter(sizes, averages, color='#FF7F00', s=25, zorder=3)
+        plt.xlabel('Number of strategies ($n$)', fontsize=15)
+
+        plt.ylabel('Average CPU time (seconds)', fontsize=15)
+        plt.title('Average time to change payoffs to new Nash equilibrium')
+        # make the y numbers integers and not 1.0e7
+        plt.ticklabel_format(style='plain')
+        for size, average in zip(sizes, averages):
+            plt.text(size, average, occurences_dict[str(size)], fontsize=8, color='black', alpha=0.8)
+        # add thin gridlines
+        plt.grid(linewidth=0.2)
+
+        # legends
+        plt.legend(loc='upper left')
+
+
+        plt.savefig('large_games_quadratic.png', dpi=300)
+
+        plt.show()
+
+    else: # linear
+        sizes = [size**2 for size in sizes]
+        fit = np.polyfit(sizes, averages, 1)
+        fit_fn = np.poly1d(fit)
+        x = np.linspace(25, max(sizes), 1000)
+        plt.xticks(np.arange(0, max(sizes)+1, 100000))
+        # give them 45 degree angle
+        plt.xticks(rotation=45)
+
+        # plt.plot(x, fit_fn(x), '--k', label='Linear fit', linewidth=1, color='dodgerblue', alpha=0.8)
+        plt.plot(x, fit_fn(x), '--k', label='Linear fit', linewidth=1.2, color='#00A6B7', alpha=0.8)
+        # plt.plot(sizes, averages, label='Average Time', linewidth=1, color='red')
+        # make the color FF6805
+        plt.plot(sizes, averages, label='Average Time', linewidth=1.5, color='#FF7F00')
+        # plt.scatter(sizes, averages, color='red', s=15)
+        plt.scatter(sizes, averages, color='#FF7F00', s=25, zorder=3)
+        plt.xlabel('Size of game ($n^2$)', fontsize=15)
+        for size, average in zip(sizes, averages):
+            plt.text(size, average, occurences_dict[str(int(np.sqrt(size)))], fontsize=10, color='black', alpha=0.8, zorder=4)
+            
+        # calculate R^2
+        residuals = np.polyfit(sizes, averages, 1)
+        r_squared = 1 - (np.var(residuals) / np.var(averages))
+        r2 = np.corrcoef(sizes, averages)[0, 1]**2
+        print(f"R^2 is {r_squared}")
+        print(f"R^2 is {r2}")
+        # Calculate residuals
+        residuals = averages - fit_fn(sizes)
+
+        # Calculate total sum of squares
+        total_sum_squares = np.sum((averages - np.mean(averages))**2)
+
+        # Calculate residual sum of squares
+        residual_sum_squares = np.sum(residuals**2)
+
+        # Calculate R^2
+        r_squared = 1 - (residual_sum_squares / total_sum_squares)
+
+        print("R^2:", r_squared)
+
+       
+        
 
 
 
-    plt.xlabel('Size of game ($n$)')
-    plt.ylabel('Average CPU time (seconds)')
-    plt.title('Average time to change payoffs to new Nash equilibrium')
-    # add thin gridlines
-    plt.grid(linewidth=0.2)
+        plt.ylabel('Average CPU time (seconds)', fontsize=15)
+        plt.title('Average time to change payoffs to new Nash equilibrium')
+        # make the y numbers integers and not 1.0e7
+        plt.ticklabel_format(style='plain')
+        # add thin gridlines
+        plt.grid(linewidth=0.2)
 
-    # legends
-    plt.legend(loc='upper left')
+        # legends
+        plt.legend(loc='upper left')
 
 
-    plt.savefig('large_games.png', dpi=300)
+        plt.savefig('large_games_linear.png', dpi=300)
 
-    plt.show()
+        plt.show()
 
-plot_averages()
+
+
+
+# load the file "log Summer 2023.txt" into a string
+string_summer_2023 = open('log Summer 2023.txt', 'r').read()
+# string_summer_2023 = open('log2.txt', 'r').read()
+# string_summer_2023 = open('log Summer 2023 2.txt', 'r').read()
+string_summer_2023 = open('log_eristwo.txt', 'r').read()
+# plot_averages(string_summer_2023, quadratic=False)
+plot_averages(string_summer_2023, quadratic=False)
+plot_averages(string_summer_2023, quadratic=True)
+# print(get_averages(string_summer_2023))
+
+
+# 58627   ee869   RUN   normal     eris2n4     hn008       job_740    Jun 29 00:54
+# 58632   ee869   PEND  normal     eris2n4                 job_895    Jun 29 00:54
+# 58633   ee869   PEND  normal     eris2n4                 job_920    Jun 29 00:54
+# 58634   ee869   PEND  normal     eris2n4                 job_950    Jun 29 00:54
+# 58635   ee869   PEND  normal     eris2n4                 job_975    Jun 29 00:54
+# 61369   ee869   PEND  normal     eris2n4                 job_20     Jun 29 12:22
+# 61370   ee869   PEND  normal     eris2n4                 job_315    Jun 29 12:22
+# 61371   ee869   PEND  normal     eris2n4                 job_385    Jun 29 12:22
+# 61372   ee869   PEND  normal     eris2n4                 job_445    Jun 29 12:22
+# 61373   ee869   PEND  normal     eris2n4                 job_500    Jun 29 12:22
+# 61374   ee869   PEND  normal     eris2n4                 job_550    Jun 29 12:22
+# 61375   ee869   PEND  normal     eris2n4                 job_590    Jun 29 12:22
+# 61376   ee869   PEND  normal     eris2n4                 job_630    Jun 29 12:22
+# 61377   ee869   PEND  normal     eris2n4                 job_670    Jun 29 12:22
+# 61378   ee869   PEND  normal     eris2n4                 job_705    Jun 29 12:22
+# 61379   ee869   PEND  normal     eris2n4                 job_740    Jun 29 12:22
+# 61380   ee869   PEND  normal     eris2n4                 job_775    Jun 29 12:22
+# 61381   ee869   PEND  normal     eris2n4                 job_805    Jun 29 12:22
+# 61382   ee869   PEND  normal     eris2n4                 job_835    Jun 29 12:22
+# 61383   ee869   PEND  normal     eris2n4                 job_865    Jun 29 12:22
+# 61384   ee869   PEND  normal     eris2n4                 job_895    Jun 29 12:22
+# 61385   ee869   PEND  normal     eris2n4                 job_920    Jun 29 12:22
+# 61386   ee869   PEND  normal     eris2n4                 job_950    Jun 29 12:22
+# 61387   ee869   PEND  normal     eris2n4                 job_975    Jun 29 12:22
+
+# bkill 61369
+# bkill 61370
+# bkill 61371
+# bkill 61372
+# bkill 61373
+# bkill 61374
+# bkill 61375
+# bkill 61376
+# bkill 61377
+# bkill 61378
+# bkill 61379
+# bkill 61380
+# bkill 61381
+# bkill 61382
+# bkill 61383
+# bkill 61384
+# bkill 61385
+# bkill 61386
+# bkill 61387
