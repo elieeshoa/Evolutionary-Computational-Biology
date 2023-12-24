@@ -68,12 +68,17 @@ def gen(sizes):
 def generate_nash_equilibrium(SIZE):
     payoff_matrix = generate_random_matrix(SIZE)
     # set one random cell to (1, 1)
-    payoff_matrix[('row', f"S{random.randint(1,SIZE)}"), ('column', f"S{random.randint(1,SIZE)}")] = \
+    nash_i = random.randint(1, SIZE)
+    nash_j = random.randint(1, SIZE)
+    # nash_i = random.randint(1,args.SIZE)
+    # nash_j = random.randint(1,args.SIZE)
+    payoff_matrix[('row', f"S{nash_i}"), ('column', f"S{nash_j}")] = \
         {'row': 1, 'column': 1}
     return payoff_matrix
 
 
-sizes = [5, 10, 20, 30, 50, 75, 100, 150, 250, 400, 700, 1000]
+# sizes = [5, 10, 20, 30, 50, 75, 100, 150, 250, 400, 700, 1000]
+# gen(sizes)
 # 315     99225
 # 385     148225
 # 445     198025
@@ -92,8 +97,9 @@ sizes = [5, 10, 20, 30, 50, 75, 100, 150, 250, 400, 700, 1000]
 # 920     846400
 # 950     902500
 # 975     950625
-sizes = [315, 385, 445, 500, 550, 590, 630, 670, 705, 740, 775, 805, 835, 865, 895, 920, 950, 975]
-gen(sizes)
+# sizes = [315, 385, 445, 500, 550, 590, 630, 670, 705, 740, 775, 805, 835, 865, 895, 920, 950, 975]
+# gen(sizes)
+gen([5])
 
 
 

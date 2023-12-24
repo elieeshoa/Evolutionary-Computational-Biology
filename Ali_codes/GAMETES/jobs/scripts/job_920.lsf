@@ -11,8 +11,7 @@ LSB_STDOUT_DIRECT=y
 
 # The following line specifies a specific queue:
 # (Alternatively you can use: # bsub -q normal < my-script.lsf)
-#BSUB -q normal
-#BSUB -R rusage[mem=4000]
+#BSUB -q bigmem
 
 # --- User commands ----
 # Activate conda (ignore if you don?~@~Yt have anaconda installed)

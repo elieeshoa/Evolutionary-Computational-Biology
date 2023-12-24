@@ -110,6 +110,29 @@ def get_averages(string):
     occurences = {size: len(times[size]) for size in times}
     return average_times, occurences
 
+
+def get_all_times(string):
+    # returns a dictionary with the size as the key and a list of times as the value
+    lines = string.split('\n')
+    times = {}
+    for line in lines:
+        # Get the size from the line.
+        size = line.split('size = ')[1].split(',')[0]
+
+        # Get the time from the line.
+        time = dt.strptime(line.split('Time: ')[1], '%H:%M:%S.%f')
+
+        # Format the time as seconds.
+        time = time.second + time.microsecond/1000000 + time.minute*60
+
+        # Add the time to the dictionary of times for the given size.
+        if size in times:
+            times[size].append(time)
+        else:
+            times[size] = [time]
+
+    return times
+
 def plot_averages(string, quadratic=True):
     # sizes = [5, 10, 20, 30, 50, 100, 250, 400, 700, 1000]
     # averages = get_averages(string)
@@ -138,10 +161,15 @@ def plot_averages(string, quadratic=True):
         plt.xticks(np.arange(0, max(sizes)+1, 100))
         # give them 45 degree angle
         plt.xticks(rotation=45)
+        plt.yticks(np.arange(0, max(averages)+1, 5))
+
+        # print r^2
+        r2 = np.corrcoef(sizes, averages)[0, 1]**2
+        print(f"R^2 = {r2}")
         
         # plt.plot(sizes, averages, label='Average Time', linewidth=1, color='red')
         # make the color FF6805
-        plt.plot(sizes, averages, label='Average Time', linewidth=1.5, color='#FF7F00')
+        # plt.plot(sizes, averages, label='Average Time', linewidth=1.5, color='#FF7F00')
         # label the points with how many times they occured
 
         # plot the data points
@@ -153,13 +181,15 @@ def plot_averages(string, quadratic=True):
         plt.title('Average time to change payoffs to new Nash equilibrium')
         # make the y numbers integers and not 1.0e7
         plt.ticklabel_format(style='plain')
-        for size, average in zip(sizes, averages):
-            plt.text(size, average, occurences_dict[str(size)], fontsize=8, color='black', alpha=0.8)
+        # for size, average in zip(sizes, averages):
+        #     plt.text(size, average, occurences_dict[str(size)], fontsize=8, color='black', alpha=0.8)
         # add thin gridlines
-        plt.grid(linewidth=0.2)
+        plt.grid(linewidth=0.4)
 
         # legends
         plt.legend(loc='upper left')
+        plt.gcf().set_size_inches(7/1.1, 6/1.1)
+        plt.tight_layout()
 
 
         plt.savefig('large_games_quadratic.png', dpi=300)
@@ -174,12 +204,13 @@ def plot_averages(string, quadratic=True):
         plt.xticks(np.arange(0, max(sizes)+1, 100000))
         # give them 45 degree angle
         plt.xticks(rotation=45)
+        plt.yticks(np.arange(0, max(averages)+1, 5))
 
         # plt.plot(x, fit_fn(x), '--k', label='Linear fit', linewidth=1, color='dodgerblue', alpha=0.8)
         plt.plot(x, fit_fn(x), '--k', label='Linear fit', linewidth=1.2, color='#00A6B7', alpha=0.8)
         # plt.plot(sizes, averages, label='Average Time', linewidth=1, color='red')
         # make the color FF6805
-        plt.plot(sizes, averages, label='Average Time', linewidth=1.5, color='#FF7F00')
+        # plt.plot(sizes, averages, label='Average Time', linewidth=1.5, color='#FF7F00')
         # plt.scatter(sizes, averages, color='red', s=15)
         plt.scatter(sizes, averages, color='#FF7F00', s=25, zorder=3)
         plt.xlabel('Size of game ($n^2$)', fontsize=15)
@@ -216,15 +247,77 @@ def plot_averages(string, quadratic=True):
         # make the y numbers integers and not 1.0e7
         plt.ticklabel_format(style='plain')
         # add thin gridlines
-        plt.grid(linewidth=0.2)
+        plt.grid(linewidth=0.4)
 
         # legends
         plt.legend(loc='upper left')
+        # set size of plot to be 7 by 6
+        plt.gcf().set_size_inches(7/1.1, 6/1.1)
+        plt.tight_layout()
 
 
         plt.savefig('large_games_linear.png', dpi=300)
 
         plt.show()
+
+def plot_medians(string):
+    # plot the values of the medians and with error bars
+    # sizes = [5, 10, 20, 30, 50, 100, 250, 400, 700, 1000]
+    d = get_all_times(string)
+    sizes = [int(size) for size in d.keys()]
+    sizes.sort()
+    medians = np.array([np.median(d[str(size)]) for size in sizes])
+    
+
+    # calculate the standard deviation
+    # stds = [np.std(d[str(size)]) for size in sizes]
+
+    # calculate the 25th and 75th percentile
+    q1s = np.array([np.percentile(d[str(size)], 25) for size in sizes])
+    q3s = np.array([np.percentile(d[str(size)], 75) for size in sizes])
+
+    for size, median, q1, q3 in zip(sizes, medians, q1s, q3s):
+        print(f"size {size} has median {median} and q1 = {q1} and q3 = {q3}  over {len(d[str(size)])} occurences")
+
+    sizes = [size**2 for size in sizes]
+    # plot the fit 
+    fit = np.polyfit(sizes, medians, 1)
+    fit_fn = np.poly1d(fit)
+    x = np.linspace(25, max(sizes), 1000)
+    plt.xticks(np.arange(0, max(sizes)+1, 100000))
+    # give them 45 degree angle
+    plt.xticks(rotation=45)
+    
+    # draw the fit line
+    plt.plot(x, fit_fn(x), '--k', label='Linear fit', linewidth=1.2, color='#00A6B7', alpha=0.8)
+    # print r^2
+    r2 = np.corrcoef(sizes, medians)[0, 1]**2
+    print(f"R^2 = {r2}")
+
+
+
+
+
+    # scatter the medians
+    plt.scatter(sizes, medians, color='red', s=15)
+    # plot the error bars
+    # plt.errorbar(sizes, medians, yerr=stds, fmt='o', color='#FF7F00', alpha=0.8, capsize=3, capthick=1, elinewidth=1, zorder=3)
+    plt.errorbar(sizes, medians, yerr=[medians-q1s, q3s-medians], fmt='o', color='#FF7F00', alpha=0.8, capsize=3, capthick=1, elinewidth=1, zorder=3)
+    plt.xlabel('Size of game ($n^2$)', fontsize=15)
+    plt.ylabel('CPU time (seconds)', fontsize=15)
+    plt.title('Median time to change payoffs to new Nash equilibrium')
+    # make the y numbers integers and not 1.0e7
+    plt.ticklabel_format(style='plain')
+    # add thin gridlines
+    plt.grid(linewidth=0.4)
+
+    # set size of plot to be 7 by 6
+    plt.gcf().set_size_inches(7/1.1, 6/1.1)
+    plt.tight_layout()
+
+    plt.savefig('large_games_median.png', dpi=300)
+
+    plt.show()
 
 
 
@@ -233,11 +326,44 @@ def plot_averages(string, quadratic=True):
 string_summer_2023 = open('log Summer 2023.txt', 'r').read()
 # string_summer_2023 = open('log2.txt', 'r').read()
 # string_summer_2023 = open('log Summer 2023 2.txt', 'r').read()
-string_summer_2023 = open('log_eristwo.txt', 'r').read()
+# string_summer_2023 = open('log_eristwo.txt', 'r').read()
+# string_summer_2023 = open('log_original_timer.txt', 'r').read()
+# string_summer_2023 = open('log_cplex.txt', 'r').read()
+string_summer_2023 = open('log_eris/log_eristwo.txt', 'r').read()
+
+# string_summer_2023_alt = open('log_eristwo.txt', 'r').read()
+# # remove all lines with "Original" or "CPLEX" in them
+# string_summer_2023_alt = '\n'.join([line for line in string_summer_2023_alt.split('\n') if 'Original' not in line and 'CPLEX' not in line])
+# string_summer_2023_org = open('log_eris/log_eristwo.txt', 'r').read()
+# # remove all lines with "CPLEX" in them
+# string_summer_2023_org = '\n'.join([line for line in string_summer_2023_org.split('\n') if 'CPLEX' not in line])
+# # combine the two strings
+# string_summer_2023 = string_summer_2023_alt + "\n" + string_summer_2023_org
+# # print(string_summer_2023)
+
+# remove all lines with "Original" in them
+# string_summer_2023 = '\n'.join([line for line in string_summer_2023.split('\n') if 'Original' not in line])
+
+# get all lines with "Original" in them
+# string_summer_2023 = '\n'.join([line for line in string_summer_2023.split('\n') if 'Original' in line])
+
+# remove the lines with "CPLEX" in them
+string_summer_2023 = '\n'.join([line for line in string_summer_2023.split('\n') if 'CPLEX' not in line])
+
+# remove lines without "RANDOMLY" in them
+# string_summer_2023 = '\n'.join([line for line in string_summer_2023.split('\n') if 'RANDOMLY' in line])
+
+# remove the lines that don't have "CPLEX" in them
+# string_summer_2023 = '\n'.join([line for line in string_summer_2023.split('\n') if 'CPLEX' in line])
+
+# write all lines with "Original" in them to a file called "log_original_timer.txt"
+# with open('log_original_timer.txt', 'a') as f:
+#     f.write('\n'.join([line for line in string_summer_2023.split('\n') if 'Original' in line]))
+
 # plot_averages(string_summer_2023, quadratic=False)
-plot_averages(string_summer_2023, quadratic=False)
-plot_averages(string_summer_2023, quadratic=True)
-# print(get_averages(string_summer_2023))
+# plot_averages(string_summer_2023, quadratic=False)
+# plot_averages(string_summer_2023, quadratic=True)
+plot_medians(string_summer_2023)
 
 
 # 58627   ee869   RUN   normal     eris2n4     hn008       job_740    Jun 29 00:54

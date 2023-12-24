@@ -56,8 +56,7 @@ LSB_STDOUT_DIRECT=y
 
 # The following line specifies a specific queue:
 # (Alternatively you can use: # bsub -q normal < my-script.lsf)
-#BSUB -q normal
-#BSUB -R rusage[mem=4000]
+#BSUB -q bigmem
 
 # --- User commands ----
 # Activate conda (ignore if you don?~@~Yt have anaconda installed)
@@ -74,7 +73,7 @@ echo -e "\\n*** job_{SIZE} started at " $start_time "\\n"
 python /PHShome/ee869/Desktop/Elie-Zomorrodi/Ali_codes/GAMETES/run_games.py --size {SIZE}
 """
 
-sizes = [705, 740, 775, 805, 835, 865, 895, 920, 950, 975]
+sizes = [705, 740, 775, 805, 835, 865, 895, 920, 950, 975, 1000]
 for size in sizes[::-1]:
     with open('jobs/scripts/job_{}.lsf'.format(size), 'w') as f:
         f.write(job_memory.format(SIZE=size))
@@ -132,3 +131,25 @@ for size in sizes[::-1]:
 # bkill 67484
 # bkill 67485
 # bkill 67486
+
+# 431824  ee869   RUN   normal     eris2n4     hn003       job_550    Nov  7 20:50
+# 431827  ee869   RUN   normal     eris2n4     hn003       job_385    Nov  7 20:50
+# 431821  ee869   RUN   normal     eris2n4     hn006       job_670    Nov  7 20:50
+# 431823  ee869   RUN   normal     eris2n4     hn006       job_590    Nov  7 20:50
+# 431825  ee869   RUN   normal     eris2n4     hn006       job_500    Nov  7 20:50
+# 431826  ee869   RUN   normal     eris2n4     hn006       job_445    Nov  7 20:50
+# 431822  ee869   RUN   normal     eris2n4     hn008       job_630    Nov  7 20:50
+# 431858  ee869   RUN   bigmem     eris2n4     sna002a     job_975    Nov  7 21:26
+# 431860  ee869   RUN   bigmem     eris2n4     sna002a     job_920    Nov  7 21:26
+# 431861  ee869   RUN   bigmem     eris2n4     sna002a     job_895    Nov  7 21:26
+
+# bkill 431824
+# bkill 431827
+# bkill 431821
+# bkill 431823
+# bkill 431825
+# bkill 431826
+# bkill 431822
+# bkill 431858
+# bkill 431860
+# bkill 431861
