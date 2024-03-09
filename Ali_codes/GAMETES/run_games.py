@@ -5,7 +5,7 @@ import datetime
 
 
 # for SIZE in [5, 10, 20, 30, 50]:
-for SIZE in [850, 925]:
+for SIZE in [250]:
 # for SIZE in [100, 250, 400, 700, 1000]:
 # for SIZE in [250]:
 # for SIZE in [400]:

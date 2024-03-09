@@ -749,7 +749,7 @@ class NashEqFinder(object):
         # set title with big font
         ax.set_title(f"{title}", fontsize=20)
         mpl.savefig(f'PNGs Summer 2023/size = {len(strategies)}, {method}.png', dpi=1000)
-        mpl.show()
+        # mpl.show()
 
     
     # a function that checks if the desired cells are nash equilibria
@@ -813,7 +813,7 @@ class NashEqFinder(object):
         changed_cells = []
         epsilon = 0.01
         for var_name, var_primal in self.current_primals.items():
-            if var_primal >= epsilon and var_name not in (self.current_binary_variables + self.current_y_binary_variables + self.b_i_variables + self.r_c_max_variables):
+            if round(var_primal, 9) >= epsilon and var_name not in (self.current_binary_variables + self.current_y_binary_variables + self.b_i_variables + self.r_c_max_variables):
                 changed_cells.append((string_to_index(var_name), var_primal))
 
         # Write changed cells into a file
@@ -873,9 +873,11 @@ class NashEqFinder(object):
         print("optlang.interface is: ", optlang.interface)
         tol = 1e-9
         # # optlang.interface.GUROBI_PARAM_FEASIBILITYTOL = tol
-        self.optModel.configuration.tolerances.feasibility = tol
-        self.optModel.configuration.tolerances.optimality = tol
-        self.optModel.configuration.tolerances.integrality = tol
+
+        # self.optModel.configuration.tolerances.feasibility = tol
+        # self.optModel.configuration.tolerances.optimality = tol
+        # self.optModel.configuration.tolerances.integrality = tol
+
         # self.optModel.configuration._set_feasibility(tol)
         # self.optModel.configuration._set_optimality(tol)
         # self.optModel.configuration._set_integrality(tol)
@@ -1032,78 +1034,93 @@ class NashEqFinder(object):
             # where the b_i\in{0,1} is a binary variable that indicates the maximum a_i
             # (i.e. b_i=1 when a_i is the max value), and M it's a "big number".
 
-            # create the b_i variables
-            b_i_variables = []
-            b_i_variables_optlang = []
+            # create the b_i variables (bi1 and bi2)
+            b_i1_variables = []
+            b_i1_variables_optlang = []
+            b_i2_variables = []
+            b_i2_variables_optlang = []
             for r in strategies:
-                str_index = root_index + "_binary_preculde_original_nash_equilibria_" + r
-                b_i_variables.append(str_index)
+                # create the b_i1 variables
+                str_index = root_index + "_binary1_preculde_original_nash_equilibria_" + r
+                b_i1_variables.append(str_index)
                 var = Variable(str_index, lb=0, ub=1, type='binary', problem=model)
-                b_i_variables_optlang.append(var)
+                b_i1_variables_optlang.append(var)
+                model.add(var)
+                # create the b_i2 variables
+                str_index = root_index + "_binary2_preculde_original_nash_equilibria_" + r
+                b_i2_variables.append(str_index)
+                var = Variable(str_index, lb=0, ub=1, type='binary', problem=model)
+                b_i2_variables_optlang.append(var)
                 model.add(var)
 
-            for binary_var in b_i_variables:
+
+
+            for binary_var in b_i1_variables:
                 self.b_i_variables.append(binary_var)
-            for binary_var in b_i_variables_optlang:
+            for binary_var in b_i1_variables_optlang:
+                self.b_i_variables_optlang.append(binary_var)
+            for binary_var in b_i2_variables:
+                self.b_i_variables.append(binary_var)
+            for binary_var in b_i2_variables_optlang:
                 self.b_i_variables_optlang.append(binary_var)
 
-            # # define U, and call it root_index + "_rmac_rc"
-            # str_rmax_rc = root_index + "_rmax_rc"
-            # rmax_rc = Variable(str_rmax_rc, type='continuous', problem=model)
-            # model.add(rmax_rc)
-            # self.r_c_max_variables.append(str_rmax_rc)
-            # self.r_c_max_variables_optlang.append(rmax_rc)
-            # # create the constraints for rmax_rc
-            # # U &\ge a_i   &\forall i \in N \\
-            # # U &\le a_i + (1-b_i)*M  & \forall i \in N \\
-            # for r in strategies:
-            #     ic_cell = ((('row', r), cell[1]))
-            #     ic_index = tuple_to_var_name(ic_cell)
-            #     c = Constraint(
-            #             rmax_rc \
-            #             - self.game.payoff_matrix[(('row', r), ('column', cell[1][1]))]['row'] \
-            #             - model.variables[ic_index + '_row_plus'] \
-            #             + model.variables[ic_index + '_row_minus'] \
-            #             , lb=0)
-            #     constraints.append(c)
+            # define U, and call it root_index + "_rmac_rc"
+            str_rmax_rc = root_index + "_rmax_rc"
+            rmax_rc = Variable(str_rmax_rc, type='continuous', problem=model)
+            model.add(rmax_rc)
+            self.r_c_max_variables.append(str_rmax_rc)
+            self.r_c_max_variables_optlang.append(rmax_rc)
+            # create the constraints for rmax_rc
+            # U &\ge a_i   &\forall i \in N \\
+            # U &\le a_i + (1-b_i)*M  & \forall i \in N \\
+            for r in strategies:
+                ic_cell = ((('row', r), cell[1]))
+                ic_index = tuple_to_var_name(ic_cell)
+                c = Constraint(
+                        rmax_rc \
+                        - self.game.payoff_matrix[(('row', r), ('column', cell[1][1]))]['row'] \
+                        - model.variables[ic_index + '_row_plus'] \
+                        + model.variables[ic_index + '_row_minus'] \
+                        , lb=0)
+                constraints.append(c)
                 
-            #     c = Constraint(
-            #             rmax_rc \
-            #             - self.game.payoff_matrix[(('row', r), ('column', cell[1][1]))]['row'] \
-            #             - model.variables[ic_index + '_row_plus'] \
-            #             + model.variables[ic_index + '_row_minus'] \
-            #             - (1 - model.variables[root_index + "_binary_preculde_original_nash_equilibria_" + r]) * 1000 \
-            #             , ub=0)
-            #     constraints.append(c)
-            # # \sum_{i \in N} b_i &= 1
-            # c = Constraint(
-            #         sum([model.variables[root_index + "_binary_preculde_original_nash_equilibria_" + r] for r in strategies]) \
-            #         , lb=1, ub=1)
-            # constraints.append(c)
+                c = Constraint(
+                        rmax_rc \
+                        - self.game.payoff_matrix[(('row', r), ('column', cell[1][1]))]['row'] \
+                        - model.variables[ic_index + '_row_plus'] \
+                        + model.variables[ic_index + '_row_minus'] \
+                        - (1 - model.variables[root_index + "_binary1_preculde_original_nash_equilibria_" + r]) * 1000 \
+                        , ub=0)
+                constraints.append(c)
+            # \sum_{i \in N} b_i1 <= 1
+            c = Constraint(
+                    sum([model.variables[root_index + "_binary1_preculde_original_nash_equilibria_" + r] for r in strategies]) \
+                    , ub=1)
+            constraints.append(c)
 
-            # # constraint (4): # rmax_rc≥b_ic^1,	∀(r,c)∈U,∀i∈S_1-{i|(i,c)∈U}
-            # for r in strategies:
-            #     if r != cell[0][1]:
-            #         ic_cell = ((('row', r), cell[1]))
-            #         ic_index = tuple_to_var_name(ic_cell)
-            #         c = Constraint(
-            #                 rmax_rc \
-            #                 - self.game.payoff_matrix[(('row', r), ('column', cell[1][1]))]['row'] \
-            #                 - model.variables[ic_index + '_row_plus'] \
-            #                 + model.variables[ic_index + '_row_minus'] \
-            #                 , lb=0)
-            #         constraints.append(c)
-            #         print("ADDED constraint (4): ", c)
+            # constraint (4): # rmax_rc≥b_ic^1,	∀(r,c)∈U,∀i∈S_1-{i|(i,c)∈U}
+            for r in strategies:
+                if r != cell[0][1]:
+                    ic_cell = ((('row', r), cell[1]))
+                    ic_index = tuple_to_var_name(ic_cell)
+                    c = Constraint(
+                            rmax_rc \
+                            - self.game.payoff_matrix[(('row', r), ('column', cell[1][1]))]['row'] \
+                            - model.variables[ic_index + '_row_plus'] \
+                            + model.variables[ic_index + '_row_minus'] \
+                            , lb=0)
+                    constraints.append(c)
+                    print("ADDED constraint (4): ", c)
 
-            # # constraint (5): # rmax_rc≥b_rc^1,+ϵ
-            # c = Constraint(
-            #         rmax_rc \
-            #         - self.game.payoff_matrix[cell]['row'] \
-            #         - model.variables[root_index+'_row_plus'] \
-            #         + model.variables[root_index+'_row_minus'] \
-            #         - epsilon_nash, lb=0)
-            # constraints.append(c)
-            # print("ADDED constraint (5): ", c)
+            # constraint (5): # rmax_rc≥b_rc^1,+ϵ
+            c = Constraint(
+                    rmax_rc \
+                    - self.game.payoff_matrix[cell]['row'] \
+                    - model.variables[root_index+'_row_plus'] \
+                    + model.variables[root_index+'_row_minus'] \
+                    - epsilon_nash, lb=0)
+            constraints.append(c)
+            print("ADDED constraint (5): ", c)
 
             
 
@@ -1130,13 +1147,13 @@ class NashEqFinder(object):
                         - self.game.payoff_matrix[(('row', cell[0][1]), ('column', strat))]['column'] \
                         - model.variables[ri_index + '_column_plus'] \
                         + model.variables[ri_index + '_column_minus'] \
-                        - (1 - model.variables[root_index + "_binary_preculde_original_nash_equilibria_" + strat]) * 1000 \
+                        - (1 - model.variables[root_index + "_binary2_preculde_original_nash_equilibria_" + strat]) * 1000 \
                         , ub=0)
                 constraints.append(c)
-            # \sum_{i \in N} b_i &= 1
+            # \sum_{i \in N} b_i2 <= 1
             c = Constraint(
-                    sum([model.variables[root_index + "_binary_preculde_original_nash_equilibria_" + strat] for strat in strategies]) \
-                    , lb=1, ub=1)
+                    sum([model.variables[root_index + "_binary2_preculde_original_nash_equilibria_" + strat] for strat in strategies]) \
+                    , ub=1)
             constraints.append(c)
 
             # constraint (6): # cmax_rc≥b_ri^2,	∀(r,c)∈U,∀i∈S_2-{i|(r,i)∈U}
@@ -1162,6 +1179,14 @@ class NashEqFinder(object):
                     - epsilon_nash, lb=0)
             constraints.append(c)
             print("ADDED constraint (7): ", c)
+
+
+            # constraint (10 from 12/29/2023): \sum_{i \in N} b_i1 + \sum_{i \in N} b_i2 >= 1
+            c = Constraint(
+                    sum([model.variables[root_index + "_binary1_preculde_original_nash_equilibria_" + r] for r in strategies]) \
+                    + sum([model.variables[root_index + "_binary2_preculde_original_nash_equilibria_" + strat] for strat in strategies]) \
+                    , lb=1)
+            constraints.append(c)
                     
 
 
@@ -1280,7 +1305,7 @@ class NashEqFinder(object):
         objective_values = []
 
         # For iteration = 1 to 5
-        for iteration in range(25):
+        for iteration in range(50):
             # print the payoff matrix
             # Elie on 1/27/2023
             print(f"\n\n\n----iteration {iteration + 1}----\n\n\n")
@@ -1318,7 +1343,7 @@ class NashEqFinder(object):
                 # Didn't work without it, which is weird
                 # Check if the variable optimal is positive and if it is not
                 # a binary variable
-                if var_primal >= epsilon and var_name not in set_binary_vars:
+                if round(var_primal, 9) >= epsilon and var_name not in set_binary_vars:
                     # I will introduce two non-linear constraints:
                     # Define a binary variable y_α such that if y_α=1, then α≠0
                     # and if y=0, then α=0 in the previous solution (note that 
@@ -1381,7 +1406,7 @@ class NashEqFinder(object):
             NZ_a = 0
             print("Calculating NZ_a")
             for var_name, var_primal in tqdm(self.current_primals.items()):
-                if (var_primal >= epsilon) and (var_name not in set_binary_vars) and (var_name not in self.current_y_binary_variables):
+                if (round(var_primal, 9) >= epsilon) and (var_name not in set_binary_vars) and (var_name not in self.current_y_binary_variables):
                     print(var_name, var_primal)
                     NZ_a += 1
             print("NZ_a", NZ_a, "\n")
@@ -1394,6 +1419,7 @@ class NashEqFinder(object):
             # expression = NZ_a - 1 - sympy.Add(*sympy.symbols(self.current_y_binary_variables))
 
             expression = NZ_a - 1
+            len_expression = 0
 
             if self.stdout_timing:
                 print(f"Time before accumulating expression using -= y_a: {datetime.datetime.now()}")
@@ -1401,11 +1427,15 @@ class NashEqFinder(object):
                 # Didn't work without it, which is weird
                 # Check if the variable optimal is positive and if it is not
                 # a binary variable
-                if var_primal > 0 and var_name not in set_binary_vars:
+                # if var_primal > 0 and var_name not in set_binary_vars:
+                if (round(var_primal, 9) >= epsilon) and (var_name not in set_binary_vars):
                     # get the binary variable y_α
                     y_a = model.variables[var_name + "_binary" + f"_ya"]
                     expression -= y_a
+                    len_expression += 1
                 # check
+                    
+            print("len_expression", len_expression)
 
             c4 = Constraint(
                     expression,
@@ -1425,7 +1455,8 @@ class NashEqFinder(object):
             # print(sympy.symbols(self.current_y_binary_variables))
 
 
-            # print('binary_variables_names', self.current_binary_variables)
+            
+            print('binary_variables_names', self.current_binary_variables)
             model.objective = \
                 Objective(
                     expression=sympy.Add(*sympy.symbols(self.current_variables)),
@@ -1490,9 +1521,18 @@ class NashEqFinder(object):
             if self.stdout_msgs:
                 print("The current primal values for iteration", iteration + 1, "is:")
             for var_name, var in self.optModel.variables.items():
-                if self.stdout_msgs:
+                # if self.stdout_msgs:
+                if True:
                     print(var_name, "=", var.primal)
                 self.current_primals[var_name] = var.primal
+
+            # print the rmax_rc and cmax_rc primal values
+            print("The current rmax_rc primal value for iteration", iteration + 1, "is:")
+            print(rmax_rc.primal)
+            print("The current cmax_rc primal value for iteration", iteration + 1, "is:")
+            print(cmax_rc.primal)
+
+            
 
             # print the binary variables primal values
             if self.stdout_msgs:
@@ -1508,7 +1548,7 @@ class NashEqFinder(object):
             # or yes because we start from the original payoff matrix every time
             #  find nasheq_cells in payoff_matrix
             [Nash_equilibria, exit_flag, game_payoff_matrix] = self.optlangRun()
-            print("matrix TOUT is: ", game_payoff_matrix)
+            # print("matrix TOUT is: ", game_payoff_matrix)
             print("Nash_equilibria TOUT is: ", Nash_equilibria)
             self.game.payoff_matrix = original_payoff_matrix
 
@@ -1634,7 +1674,14 @@ def show_matrix_original(original_payoff_matrix, payoff_matrix, nash_equilibria,
 
 #--------- Sample implementation ------
 if __name__ == "__main__":
-    print("(NashEqFinder")
+    print("NashEqFinder")
+    import importlib.metadata
+    print(importlib.metadata.version("gurobipy"))
+    print(importlib.metadata.version("optlang"))
+    # print(importlib.metadata.version("cplex"))
+    print(sys.version)
+
+
 
     from game import *
     print ("\n\n\n\n\n\n\n\n\n\n")
@@ -1752,3 +1799,12 @@ if __name__ == "__main__":
     # [Nash_equilibria, exit_flag, game_payoff_matrix] = NashEqFinderInst.optlangRun()
     # print("For the matrix:", game_payoff_matrix)
     # print("The new equilibria are:", Nash_equilibria)
+
+    # 38 solutions
+    import importlib.metadata
+    print(importlib.metadata.version("gurobipy")) # 11.0.0
+    print(importlib.metadata.version("optlang")) # 1.8.1
+    # print(importlib.metadata.version("cplex"))
+    print(sys.version)
+    # 3.8.5 (default, Sep  4 2020, 02:22:02) 
+    # [Clang 10.0.0 ]
